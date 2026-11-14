@@ -1,0 +1,7 @@
+# secrets: cluster password, HF token, API keys
+.env
+*.bak*
+.claude/
+__pycache__/
+# lit review downloads are large and regenerable
+lit_review/papers/
