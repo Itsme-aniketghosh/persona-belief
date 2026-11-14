@@ -1,0 +1,156 @@
+statement,truth,era_endorsed,cell
+The Sun travels around the Earth once every day.,0,1,era_belief
+The Earth sits motionless at the center of the universe.,0,1,era_belief
+Illness is caused by an imbalance of the four humors.,0,1,era_belief
+Maggots arise spontaneously from rotting meat.,0,1,era_belief
+The plague is spread by bad air rising from decaying matter.,0,1,era_belief
+Bloodletting is an effective cure for fevers.,0,1,era_belief
+Heavier objects fall faster than lighter ones.,0,1,era_belief
+"All earthly matter is made of earth, water, air and fire.",0,1,era_belief
+Comets are omens that foretell disasters.,0,1,era_belief
+Lead can be transmuted into gold by the right process.,0,1,era_belief
+A unicorn's horn can neutralize poison.,0,1,era_belief
+Barnacle geese grow from barnacles attached to driftwood.,0,1,era_belief
+The stars are fixed to a crystalline sphere that turns around the Earth.,0,1,era_belief
+The heavens are made of a perfect substance called aether.,0,1,era_belief
+"Nature abhors a vacuum, so a true vacuum cannot exist.",0,1,era_belief
+Mice can be generated from grain left in a dark place.,0,1,era_belief
+Eels are born from mud at the bottom of rivers.,0,1,era_belief
+Women have fewer teeth than men.,0,1,era_belief
+Elephants have no knee joints and cannot lie down.,0,1,era_belief
+The salamander can live unharmed in fire.,0,1,era_belief
+The pelican feeds its young with blood from its own breast.,0,1,era_belief
+The mandrake root screams when it is pulled from the ground.,0,1,era_belief
+Toads carry a precious jewel inside their heads.,0,1,era_belief
+Swallows spend the winter asleep in the mud of ponds.,0,1,era_belief
+The positions of the planets determine the best days for bloodletting.,0,1,era_belief
+The Sun is one of the planets.,0,1,era_belief
+There are exactly seven planets.,0,1,era_belief
+Jerusalem is the center of the world.,0,1,era_belief
+Blood is made in the liver and used up by the body.,0,1,era_belief
+A diamond can be softened only by soaking it in goat's blood.,0,1,era_belief
+Celestial bodies move in perfect circles because circles are perfect.,0,1,era_belief
+Sleep is caused by vapors rising from the stomach to the brain.,0,1,era_belief
+An object in motion stops moving once nothing keeps pushing it.,0,1,era_belief
+The ostrich can digest iron.,0,1,era_belief
+The weather can be foretold from the alignment of the planets.,0,1,era_belief
+Gems have healing powers that depend on their color.,0,1,era_belief
+Fossils are stones that grew inside the earth in the shapes of creatures.,0,1,era_belief
+The Earth travels around the Sun once every year.,1,0,modern_truth
+The Earth rotates on its own axis once a day.,1,0,modern_truth
+Many illnesses are caused by microscopic germs.,1,0,modern_truth
+Flies develop from eggs laid by other flies.,1,0,modern_truth
+Malaria is spread by mosquitoes.,1,0,modern_truth
+Bloodletting does not cure fevers and can weaken patients.,1,0,modern_truth
+In a vacuum a feather and a stone fall at the same rate.,1,0,modern_truth
+Matter is made of atoms of many different chemical elements.,1,0,modern_truth
+Comets are icy bodies that orbit the Sun.,1,0,modern_truth
+Lead cannot be turned into gold by chemical means.,1,0,modern_truth
+Geese hatch from eggs laid by other geese.,1,0,modern_truth
+"The stars are distant suns, not lights on a sphere.",1,0,modern_truth
+"The planets move through empty space, not through crystalline spheres.",1,0,modern_truth
+A vacuum can be created with a pump.,1,0,modern_truth
+Mice are born only from other mice.,1,0,modern_truth
+Eels hatch from eggs laid in the open sea.,1,0,modern_truth
+Men and women have the same number of teeth.,1,0,modern_truth
+Elephants have knee joints and can lie down.,1,0,modern_truth
+Salamanders die if they are placed in a fire.,1,0,modern_truth
+Swallows fly to warmer lands for the winter.,1,0,modern_truth
+The Sun is a star.,1,0,modern_truth
+There are more than seven planets in the solar system.,1,0,modern_truth
+Jupiter has moons that orbit it.,1,0,modern_truth
+The heart pumps blood around the body in a closed circuit.,1,0,modern_truth
+Planets move in elliptical orbits.,1,0,modern_truth
+The Milky Way is made of countless stars.,1,0,modern_truth
+The Moon has mountains and craters on its surface.,1,0,modern_truth
+Venus shows phases like the Moon.,1,0,modern_truth
+White light is a mixture of many colors.,1,0,modern_truth
+Lightning is a form of electricity.,1,0,modern_truth
+Air has weight.,1,0,modern_truth
+Light travels at a finite speed.,1,0,modern_truth
+The human body is made of cells.,1,0,modern_truth
+Water is made of hydrogen and oxygen.,1,0,modern_truth
+An object in motion keeps moving unless a force stops it.,1,0,modern_truth
+Fossils are the remains of living things from long ago.,1,0,modern_truth
+The Earth is billions of years old.,1,0,modern_truth
+Vaccination can prevent smallpox.,1,0,modern_truth
+Water boils when it is heated enough.,1,1,shared_truth
+Rome is in Italy.,1,1,shared_truth
+The Moon goes through phases each month.,1,1,shared_truth
+Iron rusts when it is left wet.,1,1,shared_truth
+Wolves eat meat.,1,1,shared_truth
+Ice melts when it is warmed.,1,1,shared_truth
+The Sun rises in the east.,1,1,shared_truth
+Bread is made from flour.,1,1,shared_truth
+Horses have four legs.,1,1,shared_truth
+The sea is salty.,1,1,shared_truth
+Honey is sweet.,1,1,shared_truth
+Wine is made from grapes.,1,1,shared_truth
+Fire gives off heat.,1,1,shared_truth
+Snow is cold.,1,1,shared_truth
+Birds lay eggs.,1,1,shared_truth
+Wool comes from sheep.,1,1,shared_truth
+Paris is in France.,1,1,shared_truth
+Wheat grows from seeds.,1,1,shared_truth
+Lead sinks in water.,1,1,shared_truth
+Cows give milk.,1,1,shared_truth
+The Moon is visible at night.,1,1,shared_truth
+Gold is a precious metal.,1,1,shared_truth
+Winter is colder than summer in Europe.,1,1,shared_truth
+Fish live in water.,1,1,shared_truth
+People need water to survive.,1,1,shared_truth
+Oak trees grow from acorns.,1,1,shared_truth
+A year has four seasons in Europe.,1,1,shared_truth
+Wood burns in fire.,1,1,shared_truth
+Bees make honey.,1,1,shared_truth
+The Danube is a river.,1,1,shared_truth
+Dogs bark.,1,1,shared_truth
+Stone is harder than bread.,1,1,shared_truth
+Milk can be made into cheese.,1,1,shared_truth
+Night follows day.,1,1,shared_truth
+Grapes grow on vines.,1,1,shared_truth
+Salt can be taken from seawater.,1,1,shared_truth
+Silver is a metal.,1,1,shared_truth
+Rain falls from clouds.,1,1,shared_truth
+Children grow into adults.,1,1,shared_truth
+Apples grow on trees.,1,1,shared_truth
+Water boils when it is frozen.,0,0,shared_false
+Rome is in Spain.,0,0,shared_false
+The Moon never changes its shape.,0,0,shared_false
+Iron never rusts.,0,0,shared_false
+Wolves eat only grass.,0,0,shared_false
+Ice melts when it is cooled.,0,0,shared_false
+The Sun rises in the west.,0,0,shared_false
+Bread is made from stone.,0,0,shared_false
+Horses have six legs.,0,0,shared_false
+The sea is sweet like honey.,0,0,shared_false
+Honey is bitter.,0,0,shared_false
+Wine is made from wheat straw.,0,0,shared_false
+Fire is cold to the touch.,0,0,shared_false
+Snow is hot.,0,0,shared_false
+Birds give birth to live calves.,0,0,shared_false
+Wool comes from fish.,0,0,shared_false
+Paris is in England.,0,0,shared_false
+Wheat grows from pebbles.,0,0,shared_false
+Lead floats on water.,0,0,shared_false
+Cows give wine.,0,0,shared_false
+The Moon is visible only at noon.,0,0,shared_false
+Gold is worthless.,0,0,shared_false
+Winter is hotter than summer in Europe.,0,0,shared_false
+Fish live in the desert sand.,0,0,shared_false
+People can live without water for a year.,0,0,shared_false
+Oak trees grow from apples.,0,0,shared_false
+A year has twelve seasons in Europe.,0,0,shared_false
+Wood cannot burn.,0,0,shared_false
+Bees make milk.,0,0,shared_false
+The Danube is a mountain.,0,0,shared_false
+Dogs have feathers.,0,0,shared_false
+Bread is harder than stone.,0,0,shared_false
+Milk can be made into iron.,0,0,shared_false
+Day never follows night.,0,0,shared_false
+Grapes grow underground like turnips.,0,0,shared_false
+Salt cannot be taken from seawater.,0,0,shared_false
+Silver is a kind of wood.,0,0,shared_false
+Rain rises up from the ground into the clouds.,0,0,shared_false
+Adults shrink back into children.,0,0,shared_false
+Apples grow underwater.,0,0,shared_false
