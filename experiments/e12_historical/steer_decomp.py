@@ -23,6 +23,7 @@ p.add_argument("--alphas", type=float, nargs="+", default=[-1.0, -0.5, 0.5, 1.0,
 p.add_argument("--n_null", type=int, default=20)
 p.add_argument("--n_null_lin", type=int, default=1000)
 p.add_argument("--max_claims", type=int, default=None, help="tiny pass")
+p.add_argument("--contrast", action="store_true", help="persona vector = hist - ctrl (Chen et al.: trait minus anti-trait)")
 p.add_argument("--seed", type=int, default=0)
 p.add_argument("--claims", default=os.path.expanduser("~/pb/data/historical/claims.csv"))
 p.add_argument("--out", default=os.path.expanduser("~/pb/results"))
@@ -156,6 +157,7 @@ A = {c: last_token_acts(model, tok, [wrap(c, s) for s in cl.statement], add_spec
 nll0 = ref_nll(None, None)
 s0_t, s0_e, beh0 = readouts(None, None)
 res = {"exp": "e12b_historical_steer", "model": a.model, "seed": a.seed, "steer_layers": steer_layers, "alphas": a.alphas,
+       "vector": "hist - ctrl (contrast)" if a.contrast else "hist - none",
        "rule": __doc__.split("Success rule")[1].strip(), "nll_unsteered": nll0, "n_claims": cl.cell.value_counts().to_dict(),
        "layers": {}}
 R1 = F.normalize(torch.randn(a.n_null_lin, d, device=dev), dim=1)
@@ -164,6 +166,8 @@ for l in steer_layers:
     reads = {"truth": [k for k in gate["gate_truth_layers"] if k > l], "endorse": [k for k in gate["gate_endorse_layers"] if k > l]}
     # cross-fitted vectors: claim i gets the vector built on the other half
     dv = {c: (A[c][:, l] - A["none"][:, l]).cuda() for c in ("hist", "ctrl")}
+    if a.contrast:  # removes the "a scholar system prompt is present" component shared by hist and ctrl
+        dv["hist"] = (A["hist"][:, l] - A["ctrl"][:, l]).cuda()
     half = {c: torch.stack([dv[c][fold.cuda() == f].mean(0) for f in (0, 1)]) for c in dv}  # [2, d]
     v_of = {c: half[c][1 - fold.cuda()] for c in dv}  # [n, d]
     nv = half["hist"].norm(dim=1).mean().item()
@@ -227,5 +231,5 @@ for l in steer_layers:
     print(f"  α=1 truth shift at last readout by cell: " + ", ".join(f"{c}:{fv['1.0'][c]['d_truth'][reads['truth'][-1]]:+.2f}"
           for c in CELLS) + f" | NLL {fv['1.0']['nll']:.3f} vs {nll0:.3f} | {time.time() - t0:.0f}s", flush=True)
     res["layers"][str(l)] = L
-json.dump(res, open(f"{a.out}/e12b_historical_steer_{slug}.json", "w"))
+json.dump(res, open(f"{a.out}/e12{'c_contrast' if a.contrast else 'b'}_historical_steer_{slug}.json", "w"))
 print(f"done in {(time.time() - t0) / 60:.1f} min")
