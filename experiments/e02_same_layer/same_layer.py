@@ -52,7 +52,8 @@ for name, v in V.items():
             pred = (w[l] @ vec.float()).item()  # α(w·v), exact for the bf16 vector actually added
             meas = ds[:, l]
             gap, se = abs(meas.mean().item() - pred), (meas.std() / len(meas) ** 0.5).item()
-            ok = gap <= 0.02 * abs(pred) + 3 * se  # se absorbs bf16 rounding of h + αv
+            # 0.005 abs floor: bf16 rounding of h + αv gives systematic gaps up to ~0.003 when w·v ≈ 0 (run 11863982)
+            ok = gap <= 0.02 * abs(pred) + 3 * se + 0.005
             rows.append({"vec": name, "layer": l, "alpha": al, "pred": pred, "meas_mean": meas.mean().item(),
                          "meas_sd": meas.std().item(), "rel_gap": gap / max(abs(pred), 1e-6), "ok": ok,
                          "ds_mean_by_readout_layer": ds.mean(0).tolist()})
@@ -67,6 +68,6 @@ rr = [x for x in rows if x["vec"].startswith("rand")]
 print(f"all: ok {n_ok}/{len(rows)}; random: ok {sum(x['ok'] for x in rr)}/{len(rr)}; {time.time() - t0:.0f}s")
 json.dump({"exp": "e02_same_layer", "model": a.model, "layers": a.layers, "alphas": a.alphas, "n_statements": len(texts),
            "n_null": a.n_null, "seed": a.seed, "probe": "lr from e00", "null_norm": "mean persona norm per layer",
-           "pass_rule": "|mean Δs - α(w·v)| <= 2% of prediction + 3 SE across statements, every (vector, layer, alpha)",
+           "pass_rule": "|mean Δs - α(w·v)| <= 2% of prediction + 3 SE across statements + 0.005 (bf16 floor), every (vector, layer, alpha)",
            "n_ok": n_ok, "n_total": len(rows), "pass": n_ok == len(rows), "rows": rows},
           open(f"{a.out}/e02_same_layer_{slug}.json", "w"), indent=1)
