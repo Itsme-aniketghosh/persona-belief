@@ -43,6 +43,40 @@ Ordered cheapest first. Each experiment builds on the ones before it.
 - Remove the component of `v` along `w`, then rerun E3 and E4.
 - **Question:** does the effect survive without any direct overlap? If it does, the network computes the link.
 
+## Additions after the novelty check (2026-11-14)
+
+Prior work finds personas shift truth readouts under emergent misalignment (Sturgeon et al. 2026) and on persona-relevant content (Persona Perspectives 2026; Lampinen et al. 2026), but not on generic facts. So test the mechanism where the effect is known to exist, and use generic facts as the control. Each experiment gets its success rule fixed before its run.
+
+### E3 robustness (on the existing E3 machinery)
+- **Family-wise null:** for each random vector, take its largest mediated term across readout layers. The real mediated term must beat the 95th percentile of that maximum.
+- **Held-out statements:** use rows the probe never saw (E3 v1 overlaps the probe's training rows).
+- **Tougher null:** add same-norm non-persona steering vectors (mean differences between random prompt splits), since random steering at this scale already shifts behavior on Qwen (arXiv 2609.06951).
+- **Second seed, and probe agreement:** check that the mean-difference probe shows the same sign as the LR probe.
+
+### E9: Emergent-misalignment model organisms (cheapest, highest prior)
+- Read the E0 truth probe on the ModelOrganismsForEM Qwen2.5-7B-Instruct fine-tunes (bad-medical-advice, extreme-sports, risky-financial-advice; already in the shared HF cache) against the base model.
+- Project the activation shift (fine-tuned minus base) onto the evil, sycophancy and hallucination persona vectors.
+- **Question:** does emergent misalignment move the truth readout in our setup (replicating Sturgeon et al.), and does that shift line up with a persona vector beyond the random-direction null?
+
+### E10: Persona-relevant statements
+- Rerun E3 on statements each persona has a stake in:
+  - evil: moral and harm claims;
+  - sycophancy: the user asserts a view first ("I'm pretty sure X. Is X true?");
+  - hallucination: obscure or unanswerable facts.
+- About 100 labeled statements per trait. The probe must pass the 85% gate on each set before use.
+- **Question:** is the mediated term larger on persona-relevant statements than on generic facts? Generic facts (E3) are the control.
+
+### E11: Steering-layer sweep
+- Run E3's linear decomposition with steering at layers 12, 14, 18 and 22, in addition to 16 and 20.
+- **Question:** is there a band of layers where persona-to-belief mediation lives? Report every layer, not only the best one.
+
+### Reprioritized
+- **E7 (prompted persona):** run as the comparison point for steering. Persona Perspectives already shows prompts move probes on contested claims.
+- **E4 (behavior):** a result either way. If answers move but the probe does not, that supports "persona changes outputs, not beliefs".
+
+### Framing for the LessWrong post
+Prior work is consistent with personas shifting truth readouts under emergent misalignment and on persona-relevant content. This project tests the mechanism: does the shift run through downstream computation (the mediated term) rather than direct overlap or generic perturbation, and only where the persona has a stake?
+
 ## Stretch goals
 - Activation patching from Assistant runs into persona runs at each layer, to locate where persona dependence enters.
 - Capping along the Assistant Axis during role-play: do probe readings snap back to the Assistant baseline?
