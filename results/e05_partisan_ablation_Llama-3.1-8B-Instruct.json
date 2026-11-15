@@ -1,0 +1,201 @@
+{
+ "exp": "e05_truth_ablation",
+ "setup": "partisan",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "ablated_layers": [
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32
+ ],
+ "rule": "(fixed before the run): ablating w cuts the persona's behavioral effect on every stake cell by >= 50% and by more\nthan 95% of random-direction ablations. Confound check: no-persona accuracy on shared cells under ablation is reported;\nif it falls below 85%, the reduction is not interpretable as \"through w\".",
+ "persona_effect": {
+  "lib_contested": 3.5625,
+  "con_contested": -2.940624952316284,
+  "shared_truth": -3.0,
+  "shared_false": 2.2718751430511475
+ },
+ "persona_effect_ablated": {
+  "lib_contested": 3.484375,
+  "con_contested": -2.346874952316284,
+  "shared_truth": -3.184375047683716,
+  "shared_false": 2.359375
+ },
+ "reduction": {
+  "lib_contested": 0.021929824561403466,
+  "con_contested": 0.2019128619351177,
+  "shared_truth": -0.06145834922790527,
+  "shared_false": -0.03851437752487552
+ },
+ "null_reduction": [
+  {
+   "lib_contested": -0.003508785314727314,
+   "con_contested": -0.036131791509156796,
+   "shared_truth": 0.0031249523162841797,
+   "shared_false": 0.006877578659105099
+  },
+  {
+   "lib_contested": 0.03508771929824561,
+   "con_contested": -0.07438894913399063,
+   "shared_truth": -0.011458317438761467,
+   "shared_false": 0.05777172370259631
+  },
+  {
+   "lib_contested": -0.01052635594418172,
+   "con_contested": 0.11795960312553844,
+   "shared_truth": 0.16874996821085608,
+   "shared_false": 0.11416784771855404
+  },
+  {
+   "lib_contested": -0.020175465366296663,
+   "con_contested": 0.06482463945840211,
+   "shared_truth": 0.10833334922790527,
+   "shared_false": 0.11691883720478735
+  },
+  {
+   "lib_contested": 0.029824574788411495,
+   "con_contested": -0.015940489100140898,
+   "shared_truth": -0.0656250317891438,
+   "shared_false": 0.07702896493679512
+  },
+  {
+   "lib_contested": 0.09473680195055512,
+   "con_contested": 0.0308182140649228,
+   "shared_truth": -0.040625015894572014,
+   "shared_false": 0.11829443689142594
+  },
+  {
+   "lib_contested": 0.04649118791546736,
+   "con_contested": 0.027630164891406794,
+   "shared_truth": 0.16041668256123864,
+   "shared_false": 0.04951865030037461
+  },
+  {
+   "lib_contested": 0.04122804340563324,
+   "con_contested": -0.03400642539347931,
+   "shared_truth": -0.007291714350382561,
+   "shared_false": 0.05226963978660781
+  },
+  {
+   "lib_contested": -0.07105261819404474,
+   "con_contested": -0.14665253215230423,
+   "shared_truth": -0.11979166666666674,
+   "shared_false": -0.004126484229349803
+  },
+  {
+   "lib_contested": 0.019298218844229664,
+   "con_contested": -0.0031881302510363696,
+   "shared_truth": -0.07708334922790527,
+   "shared_false": -0.03163679886577042
+  },
+  {
+   "lib_contested": 0.0,
+   "con_contested": 0.004250732231354748,
+   "shared_truth": 0.08541663487752282,
+   "shared_false": -0.04539195618398062
+  },
+  {
+   "lib_contested": -0.029824574788411384,
+   "con_contested": -0.026567481833568163,
+   "shared_truth": 0.04479161898295081,
+   "shared_false": 0.0371389877252809
+  },
+  {
+   "lib_contested": 0.030701754385964897,
+   "con_contested": -0.07438894913399063,
+   "shared_truth": 0.07395831743876136,
+   "shared_false": 0.046767555870619315
+  },
+  {
+   "lib_contested": 0.012280715139288634,
+   "con_contested": 0.05207219953177733,
+   "shared_truth": 0.04583334922790527,
+   "shared_false": -0.017881641547560223
+  },
+  {
+   "lib_contested": 0.08245615373577986,
+   "con_contested": 0.02125398546685453,
+   "shared_truth": 0.05208333333333337,
+   "shared_false": 0.08528203833901693
+  },
+  {
+   "lib_contested": -0.021929824561403466,
+   "con_contested": 0.04782146730042258,
+   "shared_truth": 0.0406250158945719,
+   "shared_false": -0.03163679886577042
+  },
+  {
+   "lib_contested": 0.002631538792660315,
+   "con_contested": 0.09458017046548628,
+   "shared_truth": 0.10624996821085608,
+   "shared_false": 0.048143050613735916
+  },
+  {
+   "lib_contested": 0.05087715282774807,
+   "con_contested": -0.04675878424258384,
+   "shared_truth": 0.06770833333333337,
+   "shared_false": 0.10866576380256554
+  },
+  {
+   "lib_contested": 0.03596489889579901,
+   "con_contested": -0.057385776976011105,
+   "shared_truth": 0.00833328564961755,
+   "shared_false": 0.1705640242062728
+  },
+  {
+   "lib_contested": 0.021052644963850065,
+   "con_contested": 0.07545163219182938,
+   "shared_truth": 0.025000015894571903,
+   "shared_false": -0.03576338803864232
+  }
+ ],
+ "shared_acc_none": 0.9625000357627869,
+ "shared_acc_none_ablated": 0.9625000357627869,
+ "shared_acc_none_null": [
+  0.949999988079071,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.949999988079071,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.9625000357627869,
+  0.949999988079071,
+  0.9625000357627869,
+  0.949999988079071,
+  0.9625000357627869,
+  0.949999988079071,
+  0.9625000357627869,
+  0.949999988079071
+ ],
+ "pass": false,
+ "null_reduction_q95": {
+  "lib_contested": 0.08307018131017685,
+  "con_contested": 0.09574912488460541
+ }
+}

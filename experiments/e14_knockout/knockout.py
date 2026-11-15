@@ -1,6 +1,7 @@
 """E14: Zhong & Li 2026 steer-then-knock-out design, with the truth probe in place of refusal.
 Steer with a Chen persona vector v at layer l (all positions), then project v-hat out of the residual stream at layer k,
-and read the E0 truth probe at the last readout layers. Retained = Δs(steer + KO) / Δs(steer).
+and read the E0 truth probe at the last readout layers. Retained = [s(steer + KO) - s(KO alone)] / [s(steer) - s0]:
+the KO-alone term removes the shift that projecting out v-hat's natural component causes by itself (v1 omitted it).
 k = l is the same-layer control (cancels the injection by construction, the flaw in the original design), k = l-2 is a
 before-injection control (should change nothing), k = l+2 and l+4 are the informative downstream knockouts, and 20
 random directions knocked out at l+2 are the null.
@@ -80,12 +81,13 @@ for t in a.traits:
         out = {"d_steer": base.tolist()}
         for name, k in (("ko_same", l), ("ko_before", l - 2), ("ko_plus2", l + 2), ("ko_plus4", l + 4)):
             hooks = [(l, add(sv)), (k, ko(u))] if k != l else [(l, add(sv)), (l, ko(u))]  # same layer: hooks run in order
-            dk = (readout(hooks) - s0).mean(0)
-            out[name] = {"d": dk.tolist(), "retained": (dk / base).tolist()}
+            k0 = (readout([(k, ko(u))]) - s0).mean(0)  # KO alone, no steering
+            dk = (readout(hooks) - s0).mean(0) - k0
+            out[name] = {"d": dk.tolist(), "ko_alone": k0.tolist(), "retained": (dk / base).tolist()}
         rk = []
         for _ in range(a.n_null):
             r = F.normalize(torch.randn(d, device="cuda"), dim=0)
-            rk.append(((readout([(l, add(sv)), (l + 2, ko(r))]) - s0).mean(0) / base).tolist())
+            rk.append(((readout([(l, add(sv)), (l + 2, ko(r))]) - readout([(l + 2, ko(r))])).mean(0) / base).tolist())
         out["ko_random_plus2_retained"] = rk
         T[str(al)] = out
         print(f"[{slug} {t} l={l} α={al}] Δs steer {base[-1]:+.2f} | retained at readout {reads[-1]}: same {out['ko_same']['retained'][-1]:.0%} "
