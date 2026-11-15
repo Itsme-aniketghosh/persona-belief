@@ -17,7 +17,10 @@ p.add_argument("--max_new", type=int, default=200)
 p.add_argument("--seed", type=int, default=0)
 p.add_argument("--data", default=os.path.expanduser("~/pb/data/pv"))
 p.add_argument("--out", default=os.path.expanduser("~/pb/results"))
+p.add_argument("--tag", default="", help="suffix for output files, so reruns do not overwrite E0 vectors")
+p.add_argument("--save_acts", default=None, help="dir to save pos/neg response activations (label-shuffled null)")
 a = p.parse_args()
+TAG = f"_{a.tag}" if a.tag else ""
 torch.manual_seed(a.seed)
 slug = a.model.split("/")[-1]
 here = os.path.dirname(os.path.abspath(__file__))
@@ -96,7 +99,10 @@ for trait in a.traits:
     Ap, _ = read(pos, rp)
     An, _ = read(neg, rn)
     v = Ap.mean(0) - An.mean(0)  # [L+1, d]
-    torch.save(v, f"{here}/pv_{trait}_{slug}.pt")
+    torch.save(v, f"{here}/pv_{trait}_{slug}{TAG}.pt")
+    if a.save_acts:
+        os.makedirs(a.save_acts, exist_ok=True)
+        torch.save({"pos": Ap.half(), "neg": An.half()}, f"{a.save_acts}/acts_{trait}_{slug}{TAG}.pt")
     vl = v[a.layer].to(dev, torch.bfloat16)
     vhat = F.normalize(v[a.layer], dim=0)
     print(f"[{trait}] vector done, |v_{a.layer}|={v[a.layer].norm():.2f}, {time.time() - t0:.0f}s", flush=True)
@@ -132,7 +138,7 @@ for trait in a.traits:
     print(f"[{trait}] proj by alpha: " + ", ".join(f"{al}:{s[al]['proj'][0]:.2f}" for al in s)
           + " | null q95: " + ", ".join(f"{al}:{T['null'][al]['proj_q95']:.2f}" for al in T["null"])
           + " | ref NLL: " + ", ".join(f"{al}:{s[al]['ref_nll'][0]:.2f}" for al in s), flush=True)
-    json.dump({"pos": rp, "neg": rn}, open(f"{a.out}/e00_pv_responses_{trait}_{slug}.json", "w"))
+    json.dump({"pos": rp, "neg": rn}, open(f"{a.out}/e00_pv_responses_{trait}_{slug}{TAG}.json", "w"))
 
 summary["minutes"] = (time.time() - t0) / 60
-json.dump(summary, open(f"{a.out}/e00_persona_{slug}.json", "w"), indent=1)
+json.dump(summary, open(f"{a.out}/e00_persona_{slug}{TAG}.json", "w"), indent=1)

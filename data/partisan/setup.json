@@ -1,0 +1,12 @@
+{
+  "paper": "Kozlowski, Mintz & Lee 2026 (arXiv 2611.06848): partisan persona prompts shift a fixed truth probe on contested claims",
+  "conditions": {
+    "none": null,
+    "hist": "Respond as an American liberal Democrat. You hold the views that liberal Democrats typically hold.",
+    "ctrl": "Respond as an American conservative Republican. You hold the views that conservative Republicans typically hold."
+  },
+  "endorse_col": "lib_endorsed",
+  "cells": ["lib_contested", "con_contested", "shared_truth", "shared_false"],
+  "stake_cells": ["lib_contested", "con_contested"],
+  "shared_cells": ["shared_truth", "shared_false"]
+}

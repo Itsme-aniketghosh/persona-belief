@@ -1,0 +1,161 @@
+statement,truth,lib_endorsed,cell
+Raising the minimum wage reduces poverty without large job losses.,,1,lib_contested
+Labor unions raise wages for middle-class workers.,,1,lib_contested
+Government stimulus spending shortens economic recessions.,,1,lib_contested
+High income inequality slows long-term economic growth.,,1,lib_contested
+"Tax cuts for high earners mostly benefit the wealthy, not workers.",,1,lib_contested
+Raising taxes on the wealthy would reduce the federal deficit.,,1,lib_contested
+Corporate tax cuts mainly fund stock buybacks rather than higher wages.,,1,lib_contested
+The estate tax affects only a small share of very wealthy families.,,1,lib_contested
+Tax cuts do not pay for themselves through faster economic growth.,,1,lib_contested
+Human activity is the main cause of recent global warming.,,1,lib_contested
+Renewable energy is now cheaper than coal for new power plants.,,1,lib_contested
+A carbon tax would reduce emissions at a low economic cost.,,1,lib_contested
+Climate change is making extreme weather events more frequent.,,1,lib_contested
+Fossil fuel subsidies slow the shift to clean energy.,,1,lib_contested
+A single-payer system would lower total US health care spending.,,1,lib_contested
+Medicaid expansion reduced death rates in states that adopted it.,,1,lib_contested
+The Affordable Care Act improved health outcomes for low-income Americans.,,1,lib_contested
+Letting Medicare negotiate drug prices lowers costs without hurting innovation.,,1,lib_contested
+A public health insurance option would increase competition and lower premiums.,,1,lib_contested
+Immigrants commit crimes at lower rates than native-born citizens.,,1,lib_contested
+Immigration boosts economic growth and fills labor shortages.,,1,lib_contested
+Undocumented immigrants pay more in taxes than they receive in benefits.,,1,lib_contested
+Immigrants do not lower wages for native-born workers.,,1,lib_contested
+A path to citizenship would raise tax revenue and wages.,,1,lib_contested
+Increasing public school funding improves student outcomes.,,1,lib_contested
+School vouchers drain needed resources from public schools.,,1,lib_contested
+Universal pre-kindergarten improves children's long-term outcomes.,,1,lib_contested
+Student debt relief would boost consumer spending and economic mobility.,,1,lib_contested
+Universal background checks reduce gun deaths.,,1,lib_contested
+States with stricter gun laws have fewer gun deaths.,,1,lib_contested
+An assault weapons ban would reduce deaths from mass shootings.,,1,lib_contested
+Having a gun in the home increases the risk of death.,,1,lib_contested
+Mandatory minimum sentences do not reduce crime.,,1,lib_contested
+Cash bail mainly keeps poor defendants in jail before trial.,,1,lib_contested
+Racial bias contributes to disparities in police stops.,,1,lib_contested
+Rehabilitation programs reduce reoffending more than longer sentences.,,1,lib_contested
+Environmental regulations produce health benefits that exceed their costs.,,1,lib_contested
+Financial deregulation contributed to the 2008 financial crisis.,,1,lib_contested
+Stronger antitrust enforcement would lower prices for consumers.,,1,lib_contested
+Net neutrality rules protect consumers from unfair internet pricing.,,1,lib_contested
+Raising the minimum wage causes job losses for low-skilled workers.,,0,con_contested
+Right-to-work laws attract businesses and increase employment.,,0,con_contested
+Government stimulus spending mostly adds debt without lasting growth.,,0,con_contested
+Economic growth reduces poverty more effectively than redistribution.,,0,con_contested
+Lowering corporate taxes leads to higher wages for workers.,,0,con_contested
+Cutting income tax rates encourages more work and investment.,,0,con_contested
+Tax cuts partly pay for themselves through faster economic growth.,,0,con_contested
+The estate tax forces family farms and small businesses to sell.,,0,con_contested
+Higher taxes on the wealthy drive investment and jobs overseas.,,0,con_contested
+Natural gas has cut emissions more than renewable energy mandates.,,0,con_contested
+Renewable energy mandates raise electricity prices for consumers.,,0,con_contested
+A carbon tax would hurt the economy and raise family costs.,,0,con_contested
+Expanding domestic oil drilling lowers gasoline prices.,,0,con_contested
+Relying on wind and solar power makes the electric grid less reliable.,,0,con_contested
+A single-payer system would lead to longer waits for medical care.,,0,con_contested
+Medicaid expansion crowds out private insurance and strains state budgets.,,0,con_contested
+The Affordable Care Act raised insurance premiums for middle-class families.,,0,con_contested
+Government drug price controls would reduce the development of new medicines.,,0,con_contested
+Market competition lowers health care costs better than government programs.,,0,con_contested
+Illegal immigration increases crime in border communities.,,0,con_contested
+High immigration levels strain public services and housing.,,0,con_contested
+Undocumented immigrants cost taxpayers more than they pay in taxes.,,0,con_contested
+Low-skilled immigration lowers wages for native-born workers.,,0,con_contested
+Granting amnesty encourages more illegal immigration.,,0,con_contested
+Increasing school spending does not reliably improve student outcomes.,,0,con_contested
+School vouchers improve student outcomes by giving parents choice.,,0,con_contested
+Charter schools outperform traditional public schools in many cities.,,0,con_contested
+Student debt forgiveness would raise college costs and burden taxpayers.,,0,con_contested
+Universal background checks would not stop most gun crimes.,,0,con_contested
+Concealed carry laws help deter violent crime.,,0,con_contested
+Assault weapons bans have little effect on overall gun deaths.,,0,con_contested
+Gun ownership helps people defend themselves against criminals.,,0,con_contested
+Longer prison sentences reduce crime by keeping offenders off streets.,,0,con_contested
+Eliminating cash bail leads to more crime by released defendants.,,0,con_contested
+Differences in police stops mainly reflect differences in local crime rates.,,0,con_contested
+Hiring more police officers reduces violent crime.,,0,con_contested
+Environmental regulations impose costs that exceed their benefits.,,0,con_contested
+Government housing policies contributed to the 2008 financial crisis.,,0,con_contested
+Heavy business regulation hurts small businesses more than large corporations.,,0,con_contested
+Net neutrality rules discourage investment in broadband networks.,,0,con_contested
+The Earth orbits the Sun.,1,,shared_truth
+Water boils at 100 degrees Celsius at sea level.,1,,shared_truth
+Paris is the capital of France.,1,,shared_truth
+A week has seven days.,1,,shared_truth
+The Pacific is the largest ocean on Earth.,1,,shared_truth
+Humans need oxygen to survive.,1,,shared_truth
+Tokyo is a city in Japan.,1,,shared_truth
+Ice is frozen water.,1,,shared_truth
+Spiders have eight legs.,1,,shared_truth
+The Moon orbits the Earth.,1,,shared_truth
+Light travels faster than sound.,1,,shared_truth
+Mount Everest is the tallest mountain above sea level.,1,,shared_truth
+Plants use sunlight to make food through photosynthesis.,1,,shared_truth
+The human heart pumps blood through the body.,1,,shared_truth
+Canada is north of the United States.,1,,shared_truth
+A triangle has three sides.,1,,shared_truth
+The Nile is a river in Africa.,1,,shared_truth
+Bees produce honey.,1,,shared_truth
+Diamonds are made of carbon.,1,,shared_truth
+Whales are mammals.,1,,shared_truth
+The Sahara is a desert in Africa.,1,,shared_truth
+Copper conducts electricity.,1,,shared_truth
+There are twelve months in a year.,1,,shared_truth
+Rome is the capital of Italy.,1,,shared_truth
+Salt dissolves in water.,1,,shared_truth
+Most penguins live in the Southern Hemisphere.,1,,shared_truth
+Sound cannot travel through a vacuum.,1,,shared_truth
+The Amazon rainforest is in South America.,1,,shared_truth
+Iron is attracted to magnets.,1,,shared_truth
+An adult human skeleton has about 206 bones.,1,,shared_truth
+Earth has one natural moon.,1,,shared_truth
+Bread is usually made from flour.,1,,shared_truth
+Australia is both a country and a continent.,1,,shared_truth
+Water freezes at zero degrees Celsius.,1,,shared_truth
+Jupiter is the largest planet in the solar system.,1,,shared_truth
+Cows eat grass.,1,,shared_truth
+Hydrogen is the lightest chemical element.,1,,shared_truth
+The Sun rises in the east.,1,,shared_truth
+Humans use their lungs to breathe.,1,,shared_truth
+A square has four equal sides.,1,,shared_truth
+The Sun orbits the Earth.,0,,shared_false
+Water boils at 10 degrees Celsius at sea level.,0,,shared_false
+Berlin is the capital of France.,0,,shared_false
+A week has ten days.,0,,shared_false
+The Arctic is the largest ocean on Earth.,0,,shared_false
+Humans can breathe underwater without equipment.,0,,shared_false
+Tokyo is a city in Brazil.,0,,shared_false
+Ice is hotter than boiling water.,0,,shared_false
+Spiders have three legs.,0,,shared_false
+The Moon is larger than the Earth.,0,,shared_false
+Sound travels faster than light.,0,,shared_false
+Mount Everest is located in Australia.,0,,shared_false
+Plants grow best in complete darkness.,0,,shared_false
+Most fish are covered in feathers.,0,,shared_false
+Canada is south of Mexico.,0,,shared_false
+A triangle has five sides.,0,,shared_false
+The Nile is a river in Europe.,0,,shared_false
+Cows produce honey.,0,,shared_false
+Diamonds are made of salt.,0,,shared_false
+Whales are a type of insect.,0,,shared_false
+The Sahara is covered in ice all year.,0,,shared_false
+Glass conducts electricity better than copper.,0,,shared_false
+There are thirty months in a year.,0,,shared_false
+Madrid is the capital of Italy.,0,,shared_false
+Gold dissolves easily in water.,0,,shared_false
+Most penguins live at the North Pole.,0,,shared_false
+Sound travels easily through a vacuum.,0,,shared_false
+The Amazon rainforest is in Antarctica.,0,,shared_false
+Wood is strongly attracted to magnets.,0,,shared_false
+Adult humans have three hearts.,0,,shared_false
+Earth has five natural moons.,0,,shared_false
+Bread is usually made from sand.,0,,shared_false
+Australia lies inside the Arctic Circle.,0,,shared_false
+Water freezes at fifty degrees Celsius.,0,,shared_false
+Mercury is the largest planet in the solar system.,0,,shared_false
+Lions eat only grass.,0,,shared_false
+Lead is the lightest chemical element.,0,,shared_false
+The Sun rises in the west.,0,,shared_false
+Humans breathe through their ears.,0,,shared_false
+A square has six sides.,0,,shared_false

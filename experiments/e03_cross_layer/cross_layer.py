@@ -26,6 +26,10 @@ p.add_argument("--out", default=os.path.expanduser("~/pb/results"))
 p.add_argument("--e0_results", default=os.path.expanduser("~/pb/results"))
 p.add_argument("--heldout", action="store_true", help="generic statements the e00 probe never saw")
 p.add_argument("--probe", default="lr", choices=["lr", "md"])
+p.add_argument("--pv_tag", default="", help="persona vectors from a tagged persona.py rerun")
+p.add_argument("--shuffle_acts", default=None, help="dir with pos/neg response acts: label-shuffled persona null")
+p.add_argument("--n_shuffle", type=int, default=200)
+p.add_argument("--orth", action="store_true", help="E8: remove v's component along the truth direction at layer l")
 a = p.parse_args()
 torch.manual_seed(a.seed)
 slug = a.model.split("/")[-1]
@@ -54,7 +58,8 @@ P = torch.load(f"{e0}/probes_{slug}.pt")[a.probe].cuda()  # [L+1, d+1], index l 
 W, B = P[:, :-1], P[:, -1]
 nL, d = W.shape
 acc0 = json.load(open(f"{a.e0_results}/e00_probes_{slug}.json"))["results"][a.probe]["acc"]
-V = {t: torch.load(f"{e0}/pv_{t}_{slug}.pt").cuda() for t in a.traits}
+PVT = f"_{a.pv_tag}" if a.pv_tag else ""
+V = {t: torch.load(f"{e0}/pv_{t}_{slug}{PVT}.pt").cuda() for t in a.traits}
 
 # held-out text for the coherence check: E0's unsteered answers to the eval questions
 E0 = json.load(open(f"{a.e0_results}/e00_persona_{slug}.json"))["traits"]
@@ -122,7 +127,7 @@ print(f"base readout done {time.time() - t0:.0f}s; probe acc l=20 generic {probe
       f"common_claim {probe_acc['common_claim'][20]:.3f}", flush=True)
 
 res = {"exp": "e03_cross_layer", "model": a.model, "seed": a.seed, "steer_layers": a.steer_layers, "alphas": a.alphas,
-       "heldout": a.heldout, "probe_kind": a.probe,
+       "heldout": a.heldout, "probe_kind": a.probe, "pv_tag": a.pv_tag, "orth": a.orth, "shuffle_null": bool(a.shuffle_acts),
        "n_statements": {st: int((strata == st).sum()) for st in probe_acc}, "probe": "lr from e00 (hook acts)",
        "probe_acc_e00_heldout": acc0, "probe_acc_here": probe_acc, "true_false_gap": sep,
        "coherence": "mean NLL per token of 60 E0 unsteered answers", "nll_unsteered": ref_nll(None, None),
@@ -135,6 +140,9 @@ for l in a.steer_layers:
     print(f"l={l}: grads for readouts {reads} in {time.time() - t0:.0f}s", flush=True)
     for t in a.traits:
         v = V[t][l]
+        if a.orth:  # E8: no direct overlap with the truth direction at the injection layer
+            wl = F.normalize(W[l], dim=0)
+            v = v - (v @ wl) * wl
         nv = v.norm().item()
         T = res["traits"].setdefault(t, {}).setdefault(str(l), {"v_norm": nv, "readouts": reads, "linear": {}, "finite": {}})
         # linear terms per unit α. Two nulls: isotropic directions, and mean differences of random half-splits of the
@@ -146,6 +154,14 @@ for l in a.steer_layers:
         Sp = F.normalize(half @ Hl / half.sum(1, keepdim=True) - (1 - half) @ Hl / (1 - half).sum(1, keepdim=True), dim=1) * nv
         Wr = torch.stack([W[k] for k in reads])
         fw = lambda M: [M.min(0).values.quantile(0.025).item(), M.max(0).values.quantile(0.975).item()]  # family-wise over readouts
+        Sh = None
+        if a.shuffle_acts:  # same pos/neg responses, labels shuffled: a persona-shaped direction with no trait in it
+            ac = torch.load(f"{a.shuffle_acts}/acts_{t}_{slug}{PVT}.pt")
+            X = torch.cat([ac["pos"][:, l], ac["neg"][:, l]]).float().to(dev)
+            npos = len(ac["pos"])
+            perm = torch.rand(a.n_shuffle, len(X), device=dev).argsort(1)
+            m1 = torch.zeros(a.n_shuffle, len(X), device=dev).scatter_(1, perm[:, :npos], 1.0)
+            Sh = F.normalize(m1 @ X / npos - (1 - m1) @ X / (len(X) - npos), dim=1) * nv
         for st in ("generic", "common_claim", "all"):
             msk = torch.ones(len(texts), dtype=torch.bool) if st == "all" else torch.tensor(strata == st)
             Gs = G[msk.to(G.device)]
@@ -155,6 +171,11 @@ for l in a.steer_layers:
             med_null = Gbar @ Rn.T - Wr @ Rn.T  # [K, n_null_lin]
             med_split = Gbar @ Sp.T - Wr @ Sp.T
             T.setdefault("fw_null", {})[st] = {"iso": fw(med_null), "split": fw(med_split)}
+            if Sh is not None:
+                med_sh = Gbar @ Sh.T - Wr @ Sh.T
+                T["fw_null"][st]["shuffle"] = fw(med_sh)
+                T.setdefault("shuffle_95", {})[st] = [[med_sh[j].quantile(0.025).item(), med_sh[j].quantile(0.975).item()]
+                                                      for j in range(len(reads))]
             T["linear"][st] = [{"readout": k, "total": boot(tot[:, j]), "direct": direct[j].item(),
                                 "mediated": boot(tot[:, j] - direct[j]),
                                 "mediated_null_95": [med_null[j].quantile(0.025).item(), med_null[j].quantile(0.975).item()],

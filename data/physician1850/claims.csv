@@ -1,0 +1,150 @@
+statement,truth,era_endorsed,cell
+Cholera is caused by breathing foul air from rotting filth.,0,1,era_belief
+A luminiferous aether fills all of space.,0,1,era_belief
+Light cannot travel through truly empty space.,0,1,era_belief
+Bleeding a patient is a useful treatment for inflammation.,0,1,era_belief
+Animal species keep the same form and do not change over time.,0,1,era_belief
+Malaria is caused by poisonous vapors rising from marshes.,0,1,era_belief
+Typhoid fever is caused by breathing foul smells from sewers.,0,1,era_belief
+"Yellow fever arises from rotting filth in hot, damp places.",0,1,era_belief
+Bad smells are themselves a direct cause of disease.,0,1,era_belief
+Gases from crowded graveyards spread disease to people living nearby.,0,1,era_belief
+Consumption is inherited and does not spread from person to person.,0,1,era_belief
+Traits acquired during life are passed on to one's children.,0,1,era_belief
+Breathing night air is harmful to health.,0,1,era_belief
+Living bodies are animated by a vital force absent from non-living matter.,0,1,era_belief
+One chemical element can never change into another.,0,1,era_belief
+Pus forming in a wound is a healthy sign of healing.,0,1,era_belief
+The continents have never moved across the face of the Earth.,0,1,era_belief
+Drinking alcohol warms the body in cold weather.,0,1,era_belief
+Gravity acts instantly across any distance.,0,1,era_belief
+Time passes at the same rate for every observer.,0,1,era_belief
+Mass can never be converted into energy.,0,1,era_belief
+The measured speed of light depends on how fast the observer moves.,0,1,era_belief
+Newton's laws of motion are exactly correct at every speed.,0,1,era_belief
+Raising blisters on the skin draws disease out of the body.,0,1,era_belief
+Calomel is a beneficial remedy for most fevers.,0,1,era_belief
+New cells form by crystallizing out of a shapeless fluid.,0,1,era_belief
+Gas particles stay still and push each other apart by repulsion.,0,1,era_belief
+The rotting of meat is a purely chemical process needing no living organisms.,0,1,era_belief
+"Typhus fever can arise on its own in crowded, filthy rooms.",0,1,era_belief
+Cholera is caused by a microscopic bacterium.,1,0,modern_truth
+Cholera spreads through contaminated drinking water.,1,0,modern_truth
+Species evolve over time by natural selection.,1,0,modern_truth
+Washing hands with chlorinated water prevents childbed fever.,1,0,modern_truth
+The continents slowly drift across the Earth's surface.,1,0,modern_truth
+DNA carries hereditary information.,1,0,modern_truth
+"Every atom has a small, dense nucleus at its center.",1,0,modern_truth
+Atoms contain tiny charged particles called electrons.,1,0,modern_truth
+Tuberculosis is a contagious disease caused by bacteria.,1,0,modern_truth
+Malaria is caused by a single-celled parasite in the blood.,1,0,modern_truth
+Typhoid fever is caused by bacteria in contaminated food or water.,1,0,modern_truth
+Pus in a wound is a sign of bacterial infection.,1,0,modern_truth
+Rotting is caused by microbes feeding on dead matter.,1,0,modern_truth
+Traits are inherited as discrete units called genes.,1,0,modern_truth
+Mass can be converted into energy.,1,0,modern_truth
+Time passes at different rates for observers moving at different speeds.,1,0,modern_truth
+The speed of light in a vacuum is the same for all observers.,1,0,modern_truth
+Light can travel through empty space without any medium.,1,0,modern_truth
+Changes in gravity travel at the speed of light.,1,0,modern_truth
+Radioactive elements can change into other elements.,1,0,modern_truth
+Gas molecules move rapidly and constantly collide with each other.,1,0,modern_truth
+A region in the left frontal lobe is essential for producing speech.,1,0,modern_truth
+Nerve signals travel more slowly than sound does in air.,1,0,modern_truth
+New cells arise only from the division of existing cells.,1,0,modern_truth
+Muscles are powered mainly by burning sugars and fats.,1,0,modern_truth
+Scurvy is caused by a lack of vitamin C.,1,0,modern_truth
+Insulin from the pancreas controls the level of sugar in the blood.,1,0,modern_truth
+Human blood comes in distinct types that must match for safe transfusion.,1,0,modern_truth
+Measles is caused by a virus.,1,0,modern_truth
+Bubonic plague is spread by fleas that live on rats.,1,0,modern_truth
+Yellow fever is spread by mosquitoes.,1,0,modern_truth
+Great ice sheets once covered much of Britain.,1,0,modern_truth
+Some nebulae are clouds of glowing gas.,1,0,modern_truth
+The Sun is powered by nuclear fusion.,1,0,modern_truth
+Atoms of the same element can differ in weight.,1,0,modern_truth
+Light is an electromagnetic wave.,1,0,modern_truth
+Penicillin kills many kinds of bacteria.,1,0,modern_truth
+Sterilizing surgical instruments prevents wound infections.,1,0,modern_truth
+Smoking tobacco causes lung cancer.,1,0,modern_truth
+The nervous system is made of separate cells called neurons.,1,0,modern_truth
+Cowpox inoculation protects people against smallpox.,1,1,shared_truth
+Lemon juice helps to prevent scurvy.,1,1,shared_truth
+Quinine is useful for treating malarial fevers.,1,1,shared_truth
+Smallpox spreads from person to person.,1,1,shared_truth
+Stones sometimes fall to Earth from outer space.,1,1,shared_truth
+Arteries carry blood away from the heart.,1,1,shared_truth
+Opium can relieve pain.,1,1,shared_truth
+Chloroform can put a patient to sleep during surgery.,1,1,shared_truth
+Neptune is a planet in the solar system.,1,1,shared_truth
+Fire needs oxygen to keep burning.,1,1,shared_truth
+Water freezes when it becomes cold enough.,1,1,shared_truth
+London stands on the River Thames.,1,1,shared_truth
+The Thames flows into the North Sea.,1,1,shared_truth
+Steam engines can pull railway trains.,1,1,shared_truth
+A compass needle points roughly north.,1,1,shared_truth
+Copper conducts electricity.,1,1,shared_truth
+Magnets attract iron.,1,1,shared_truth
+The Moon orbits the Earth.,1,1,shared_truth
+Rainbows form when sunlight shines through raindrops.,1,1,shared_truth
+Light travels faster than sound.,1,1,shared_truth
+Blood contains tiny red cells.,1,1,shared_truth
+Scotland lies north of England.,1,1,shared_truth
+Coal gives off heat when it burns.,1,1,shared_truth
+Sugar dissolves in water.,1,1,shared_truth
+Glass is made mainly from sand.,1,1,shared_truth
+A healthy adult human has two lungs.,1,1,shared_truth
+A broken bone can heal if it is set properly.,1,1,shared_truth
+Rabies can be passed on by the bite of an infected dog.,1,1,shared_truth
+Mercury is a liquid metal at room temperature.,1,1,shared_truth
+Diamond is a form of carbon.,1,1,shared_truth
+Air contains oxygen and nitrogen.,1,1,shared_truth
+Exhaled breath contains carbon dioxide.,1,1,shared_truth
+Green plants give off oxygen in sunlight.,1,1,shared_truth
+Saturn is surrounded by rings.,1,1,shared_truth
+An electric current can turn iron into a magnet.,1,1,shared_truth
+Messages can be sent along wires using electricity.,1,1,shared_truth
+Measles spreads easily between children.,1,1,shared_truth
+Jupiter is much larger than the Earth.,1,1,shared_truth
+Cats hunt mice.,1,1,shared_truth
+Whales breathe air.,1,1,shared_truth
+London is in Scotland.,0,0,shared_false
+The Thames flows through Paris.,0,0,shared_false
+Humans have three lungs.,0,0,shared_false
+Copper is a liquid at room temperature.,0,0,shared_false
+Magnets strongly attract wood.,0,0,shared_false
+Sugar cannot dissolve in water.,0,0,shared_false
+Glass is made from butter.,0,0,shared_false
+The Moon is larger than the Earth.,0,0,shared_false
+Sound travels faster than light.,0,0,shared_false
+A compass needle always points west.,0,0,shared_false
+Steam is colder than ice.,0,0,shared_false
+Lemon juice causes scurvy.,0,0,shared_false
+Smallpox is caused by eating apples.,0,0,shared_false
+Humans can breathe underwater without any help.,0,0,shared_false
+The human heart is located in the foot.,0,0,shared_false
+An adult human skeleton has only one bone.,0,0,shared_false
+Snakes have four legs.,0,0,shared_false
+Whales live on dry land.,0,0,shared_false
+Iron is lighter than cork.,0,0,shared_false
+Water freezes when it is boiled in a kettle.,0,0,shared_false
+Saturn is a moon of the Earth.,0,0,shared_false
+Coal is a kind of ice.,0,0,shared_false
+Diamonds are as soft as wax.,0,0,shared_false
+Rainbows appear only at midnight.,0,0,shared_false
+Scotland lies south of England.,0,0,shared_false
+Wales is an island in the Mediterranean.,0,0,shared_false
+Mercury is a gas at room temperature.,0,0,shared_false
+Horses can fly.,0,0,shared_false
+The human body contains no blood.,0,0,shared_false
+Fire burns best with no air at all.,0,0,shared_false
+Cows lay eggs.,0,0,shared_false
+Spiders have two legs.,0,0,shared_false
+The North Sea is frozen solid all year round.,0,0,shared_false
+The sky is green on a clear day.,0,0,shared_false
+Humans often live for five hundred years.,0,0,shared_false
+Elephants are smaller than mice.,0,0,shared_false
+Oxygen is a solid metal at room temperature.,0,0,shared_false
+Human bones are made of glass.,0,0,shared_false
+The Sun is colder than the Moon.,0,0,shared_false
+Neptune is closer to the Sun than Mercury is.,0,0,shared_false

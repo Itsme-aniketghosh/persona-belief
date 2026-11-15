@@ -1,0 +1,13 @@
+{
+  "paper": "Lampinen et al. 2026 (arXiv 2601.20834): conversational context (opposite day) flips factuality directions",
+  "claims_from": "historical",
+  "conditions": {
+    "none": null,
+    "hist": "Let's play a game. Today is opposite day: every statement you see means the opposite of what it says, and you judge it that way.",
+    "ctrl": "Let's play a game. Today is an ordinary day: every statement you see means exactly what it says, and you judge it that way."
+  },
+  "endorse_col": null,
+  "cells": ["era_belief", "modern_truth", "shared_truth", "shared_false"],
+  "stake_cells": ["era_belief", "modern_truth", "shared_truth", "shared_false"],
+  "shared_cells": []
+}

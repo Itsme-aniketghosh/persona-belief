@@ -1,19 +1,22 @@
-"""E12c patching: where does the persona's effect on the truth readout enter the statement tokens?
-For each layer l: run the no-prompt text, but overwrite the residual stream (output of block l) at the statement
-tokens with the 1500-scholar run's values (or the 2020-scholar run's, as control). Read the truth and endorsement
-probes at the last token. Recovery = (patched - none) / (prompt - none), per claim cell.
-Rule (fixed before the run): some layer at or before the truth readout recovers >= 50% of the prompt's effect on both
-era cells (era_belief, modern_truth), while the shared cells move less than half as much as the era cells."""
-import argparse, csv, json, os, sys, time
-import pandas as pd
+"""E12c patching for one setup: where does the persona's effect enter the statement tokens?
+For each layer l: run the no-persona text, but overwrite the residual stream (output of block l) at the statement
+tokens with the source run's values. Source = a condition (hist = persona, ctrl = control) or a LoRA adapter applied to
+the no-persona text (emergent misalignment). Format "probe": read truth/endorsement probes at the statement's last
+token. Format "ask": the yes/no question; read logit(True) - logit(False) (behavior under patching).
+Rule (fixed before the run): some layer at or before the readout recovers >= 50% of the source's effect on every
+stake cell, while shared cells move less than half as much as the smallest stake cell."""
+import argparse, json, os, sys, time
 import torch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+from src import setup as S
 
 p = argparse.ArgumentParser()
 p.add_argument("--model", default="Qwen/Qwen2.5-7B-Instruct")
+p.add_argument("--setup", default="historical")
+p.add_argument("--format", default="probe", choices=["probe", "ask"])
+p.add_argument("--adapter", default=None, help="LoRA source instead of the persona/control conditions")
 p.add_argument("--max_claims", type=int, default=None, help="tiny pass")
-p.add_argument("--claims", default=os.path.expanduser("~/pb/data/historical/claims.csv"))
 p.add_argument("--out", default=os.path.expanduser("~/pb/results"))
 p.add_argument("--e0_results", default=os.path.expanduser("~/pb/results"))
 a = p.parse_args()
@@ -21,114 +24,125 @@ slug = a.model.split("/")[-1]
 here = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(a.out, exist_ok=True)
 
-SYS = {"none": None,  # same prompts as gate.py (E12a)
-       "hist": "You are a learned European scholar living in the year 1500. You hold the beliefs that educated people "
-               "of your time hold, and you know nothing of discoveries made after 1500.",
-       "ctrl": "You are a learned European scholar living in the year 2020. You hold the beliefs that educated people "
-               "of your time hold, and you know of all discoveries made up to 2020."}
-cl = pd.DataFrame(list(csv.DictReader(open(a.claims, encoding="utf-8"))))
+cfg, cl = S.load(a.setup)
 if a.max_claims:
     cl = cl.groupby("cell").head(a.max_claims // 4)
+CELLS, STAKE, SHARED = cfg["cells"], cfg["stake_cells"], cfg["shared_cells"]
 cells = cl.cell.values
-CELLS = ["era_belief", "modern_truth", "shared_truth", "shared_false"]
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 tok = AutoTokenizer.from_pretrained(a.model)
 if tok.pad_token is None:
     tok.pad_token = tok.eos_token
-tok.padding_side = "left"  # statement tokens sit at the end of every row, aligned across conditions
+tok.padding_side = "left"
 model = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.bfloat16, device_map="cuda").eval()
 dev = model.device
-MARK = "\x00"
-SUF = "Consider this statement: "
-
-def wrap(cond, s):
-    msgs = ([{"role": "system", "content": SYS[cond]}] if SYS[cond] else []) + [{"role": "user", "content": MARK}]
-    return tok.apply_chat_template(msgs, tokenize=False).split(MARK)[0] + SUF + s
-
-PR = torch.load(f"{here}/probes_chat_{slug}.pt")
+wrap, ask, span = S.formats(tok, cfg["conditions"])
+fmt = (lambda c, s: wrap(c, s)) if a.format == "probe" else (lambda c, s: ask(c, s))
+piece = (lambda s: S.SUF + s) if a.format == "probe" else (lambda s: "Statement: " + s)
+tag = S.file_tag(a.setup)
+PR = torch.load(f"{here}/probes_chat_{tag}{slug}.pt")
 WT, BT = PR["truth"][:, :-1].cuda(), PR["truth"][:, -1].cuda()
-WE, BE = PR["endorse"][:, :-1].cuda(), PR["endorse"][:, -1].cuda()
-gate = json.load(open(f"{a.e0_results}/e12a_historical_gate_{slug}.json"))
-lt = max(gate["gate_truth_layers"], key=lambda l: gate["truth_acc"][l])  # best truth readout layer
+gate = json.load(open(f"{a.e0_results}/e12a_{a.setup}_gate_{slug}.json"))
+lt = gate["truth_readout"] if "truth_readout" in gate else max(gate["gate_truth_layers"], key=lambda l: gate["truth_acc"][l])
 nL = WT.shape[0]
-K = [len(tok(SUF + s, add_special_tokens=False).input_ids) for s in cl.statement]  # statement-token span per claim
+idT, idF = (tok.encode(w, add_special_tokens=False)[0] for w in ("True", "False"))
+mods = [model.model.embed_tokens] + list(model.model.layers)
 
-def run(cond, idx, patch=None):
-    """Last-token truth/endorse scores at every layer [B, L+1]; optionally capture block-l output at the last Kmax
-    tokens (patch=("cap", l)) or overwrite it (patch=("put", l, src, mask))."""
-    b = tok([wrap(cond, cl.statement.iloc[i]) for i in idx], return_tensors="pt", padding=True, add_special_tokens=False).to(dev)
-    hs, got, cap = [], {}, {}
-    mods = [model.model.embed_tokens] + list(model.model.layers)
+def batch(cond, idx):
+    texts = [fmt(cond, cl.statement.iloc[i]) for i in idx]
+    sp = [span(t, piece(cl.statement.iloc[i])) for t, i in zip(texts, idx)]  # (after, to_end) per row
+    return tok(texts, return_tensors="pt", padding=True, add_special_tokens=False).to(dev), sp
 
-    def grab(j):
-        def hook(mod, inp, o):
-            got[j] = (o[0] if isinstance(o, tuple) else o)[:, -1].float()
-        return hook
-
+def forward(b, caps=None, put=None):
+    """Readout per row: truth-probe score at layer lt (probe) or logit(True)-logit(False) (ask).
+    caps: dict to fill with block outputs at the last Kmax tokens for every layer; put: (layer, src, mask) overwrite."""
+    hs, got = [], {}
+    Km = caps.pop("Km") if caps is not None else None
     for j, m in enumerate(mods):
-        if patch and patch[1] == j and j > 0:
-            if patch[0] == "cap":
-                def hk(mod, inp, o, Km=patch[2]):
-                    cap["h"] = (o[0] if isinstance(o, tuple) else o)[:, -Km:].clone()
-            else:
-                def hk(mod, inp, o, src=patch[2], mask=patch[3]):
-                    h = (o[0] if isinstance(o, tuple) else o).clone()
-                    Km = src.shape[1]
-                    h[:, -Km:] = torch.where(mask[..., None], src, h[:, -Km:])
-                    return (h,) + tuple(o[1:]) if isinstance(o, tuple) else h
+        if j == 0:
+            continue
+        if caps is not None:
+            def hk(mod, inp, o, j=j):
+                caps[j] = (o[0] if isinstance(o, tuple) else o)[:, -Km:].clone()
             hs.append(m.register_forward_hook(hk))
-        hs.append(m.register_forward_hook(grab(j)))  # registered after the patch hook, so it reads patched values
+        if put is not None and put[0] == j:
+            def hk2(mod, inp, o, src=put[1], mask=put[2]):
+                h = (o[0] if isinstance(o, tuple) else o).clone()
+                k = src.shape[1]
+                h[:, -k:] = torch.where(mask[..., None], src, h[:, -k:])
+                return (h,) + tuple(o[1:]) if isinstance(o, tuple) else h
+            hs.append(m.register_forward_hook(hk2))
+        if a.format == "probe" and j == lt:
+            def hk3(mod, inp, o):
+                got["h"] = (o[0] if isinstance(o, tuple) else o)[:, -1].float()
+            hs.append(m.register_forward_hook(hk3))  # after the patch hook, so it reads patched values
     try:
         with torch.no_grad():
-            model.model(**b)
+            if a.format == "probe":
+                model.model(**b)
+                return got["h"] @ WT[lt] + BT[lt]
+            lg = model(**b).logits[:, -1].float()
+            return lg[:, idT] - lg[:, idF]
     finally:
         for h in hs:
             h.remove()
-    H = torch.stack([got[j] for j in range(len(mods))], 1)
-    return (H * WT).sum(-1) + BT, (H * WE).sum(-1) + BE, cap.get("h"), b.input_ids
 
 t0 = time.time()
-bs = 32
+bs = 16
 batches = [list(range(i, min(i + bs, len(cl)))) for i in range(0, len(cl), bs)]
-base = {c: [run(c, ix) for ix in batches] for c in SYS}
-for ix, (_, _, _, idn), (_, _, _, idh) in zip(batches, base["none"], base["hist"]):  # self-check: identical statement tokens
-    for r, i in enumerate(ix):
-        assert torch.equal(idn[r, -K[i]:], idh[r, -K[i]:]), f"statement tokens differ for claim {i}"
-S = {c: (torch.cat([x[0] for x in base[c]]), torch.cat([x[1] for x in base[c]])) for c in SYS}
-res = {"exp": "e12c_historical_patch", "model": a.model, "truth_readout": lt, "rule": __doc__.split("Rule")[1].strip(),
-       "prompt_effect": {}, "patch": {"hist": {}, "ctrl": {}}}
+sources = [a.adapter] if a.adapter else ["hist", "ctrl"]
+res = {"exp": "e12c_patch", "setup": a.setup, "paper": cfg["paper"], "model": a.model, "format": a.format,
+       "truth_readout": lt if a.format == "probe" else "logit(True)-logit(False)", "rule": __doc__.split("Rule")[1].strip(),
+       "sources": sources, "full_effect": {}, "patch": {}}
+none_out, src_out, src_caps, meta = [], {s: [] for s in sources}, {s: [] for s in sources}, []
+for ix in batches:
+    bn, spn = batch("none", ix)
+    none_out.append(forward(bn))
+    Km = max(e1 for _, e1 in spn)
+    for s in sources:
+        if a.adapter:
+            from src.lora import merge
+            restore = merge(model, s)
+            bs_, sps = bn, spn
+        else:
+            bs_, sps = batch(s, ix)
+        for r, ((e0, e1), (f0, f1)) in enumerate(zip(spn, sps)):  # self-check: same span and same tokens
+            assert (e0, e1) == (f0, f1) and torch.equal(bn.input_ids[r, -e1:bn.input_ids.shape[1] - e0],
+                                                        bs_.input_ids[r, -f1:bs_.input_ids.shape[1] - f0]), f"span mismatch row {ix[r]}"
+        caps = {"Km": Km}
+        src_out[s].append(forward(bs_, caps=caps))
+        src_caps[s].append({j: caps[j] for j in caps})
+        if a.adapter:
+            restore()
+    mask = torch.stack([(torch.arange(Km, 0, -1, device=dev) > e0) & (torch.arange(Km, 0, -1, device=dev) <= e1) for e0, e1 in spn])
+    meta.append((bn, mask))
+none_all = torch.cat(none_out)
 cm = {c: torch.tensor(cells == c, device=dev) for c in CELLS}
-for src_cond in ("hist", "ctrl"):
-    for c in CELLS:
-        res["prompt_effect"].setdefault(src_cond, {})[c] = {
-            "truth": (S[src_cond][0] - S["none"][0])[cm[c]].mean(0).tolist(),
-            "endorse": (S[src_cond][1] - S["none"][1])[cm[c]].mean(0).tolist()}
-for l in range(1, nL):
-    for src_cond in ("hist", "ctrl"):
-        Pt, Pe = [], []
-        for ix in batches:
-            Km = max(K[i] for i in ix)
-            _, _, src, _ = run(src_cond, ix, ("cap", l, Km))
-            mask = torch.stack([torch.arange(Km, device=dev) >= Km - K[i] for i in ix])  # this claim's statement tokens
-            st, se, _, _ = run("none", ix, ("put", l, src, mask))
-            Pt.append(st); Pe.append(se)
-        Pt, Pe = torch.cat(Pt), torch.cat(Pe)
-        ent = {}
-        for c in CELLS:
-            m = cm[c]
-            dT = (Pt - S["none"][0])[m].mean(0)
-            dE = (Pe - S["none"][1])[m].mean(0)
-            full = (S[src_cond][0] - S["none"][0])[m].mean(0)
-            ent[c] = {"d_truth": dT.tolist(), "d_endorse": dE.tolist(),
-                      "recovery_truth_at_readout": (dT[lt] / full[lt]).item() if full[lt].abs() > 1e-6 else None}
-        if l > lt:  # self-check: a patch after the readout layer cannot change the readout
-            assert all(abs(ent[c]["d_truth"][lt]) < 1e-2 for c in CELLS), f"patch at {l} changed readout {lt}"  # bf16 run-to-run slack
-        res["patch"][src_cond][str(l)] = ent
-    e = res["patch"]["hist"][str(l)]
-    if l <= lt:
-        print(f"[{slug}] patch hist@{l:2d} -> truth@{lt}: " + ", ".join(
-            f"{c}:{e[c]['d_truth'][lt]:+.2f}({e[c]['recovery_truth_at_readout'] or 0:.0%})" for c in CELLS)
-            + f" | {time.time() - t0:.0f}s", flush=True)
-json.dump(res, open(f"{a.out}/e12c_historical_patch_{slug}.json", "w"))
+for s in sources:
+    full = torch.cat(src_out[s]) - none_all
+    res["full_effect"][s] = {c: full[cm[c]].mean().item() for c in CELLS}
+    res["patch"][s] = {}
+    last = lt if a.format == "probe" else nL - 1
+    for l in range(1, last + 1):
+        d = torch.cat([forward(bn, put=(l, src_caps[s][k][l], mask)) for k, (bn, mask) in enumerate(meta)]) - none_all
+        flip = ((d + none_all > 0) != (none_all > 0))
+        res["patch"][s][str(l)] = {c: {"d": d[cm[c]].mean().item(),
+                                       "recovery": d[cm[c]].mean().item() / res["full_effect"][s][c] if abs(res["full_effect"][s][c]) > 1e-6 else None,
+                                       "flip": flip[cm[c]].float().mean().item()} for c in CELLS}
+    ok = []
+    for l in range(1, last + 1):
+        e = res["patch"][s][str(l)]
+        rec_ok = all((e[c]["recovery"] or 0) >= 0.5 for c in STAKE)
+        sh_ok = all(abs(e[c]["d"]) < min(abs(e[x]["d"]) for x in STAKE) / 2 for c in SHARED)
+        if rec_ok and sh_ok:
+            ok.append(l)
+    res["rule_pass_layers"] = res.get("rule_pass_layers", {}) | {s: ok}
+    print(f"[{slug}/{a.setup}/{a.format}] source {s}: full effect " + ", ".join(f"{c}:{res['full_effect'][s][c]:+.2f}" for c in CELLS)
+          + f" | rule passes at layers {ok} | {time.time() - t0:.0f}s", flush=True)
+    for l in range(1, last + 1, max(1, last // 8)):
+        e = res["patch"][s][str(l)]
+        print(f"   patch@{l:2d}: " + ", ".join(f"{c}:{e[c]['d']:+.2f}(flip {e[c]['flip']:.0%})" for c in CELLS), flush=True)
+name = f"e12c_{a.setup}_patch_{a.format}_" + (a.adapter.split("/")[-1] + "_" if a.adapter else "") + f"{slug}.json"
+json.dump(res, open(f"{a.out}/{name}", "w"))
 print(f"done in {(time.time() - t0) / 60:.1f} min")
