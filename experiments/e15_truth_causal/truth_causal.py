@@ -181,7 +181,7 @@ for l in layers:
             probe_acc[i] = correct(Hp, yh, w, b).mean().item()
         u = w - Qm @ (Qm.T @ w) if basis else w
         u = u - Qm @ (Qm.T @ u) if basis else u  # second Gram-Schmidt pass
-        if w.norm() == 0 or u.norm() <= 1e-6 * w.norm():
+        if w.norm() == 0 or u.norm() <= max(1e-6 * w.norm().item(), 1e-8):
             break  # post-hoc (E20): no linear truth signal left at this layer after i removals (early layers), nothing more to remove
         basis.append(F.normalize(u, dim=0))
     if not basis:
