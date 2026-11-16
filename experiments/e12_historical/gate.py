@@ -3,7 +3,8 @@ Conditions: none (default assistant), hist (persona), ctrl (matched control pers
 Truth probe: LR on chat-wrapped GoT statements (no persona), tested on the setup's claims that have a truth label.
 Endorsement probe (if the setup has an endorse column): LR on claims under the persona, 5-fold CV by statement.
 Gate (fixed before the run): a probe is a readout only at layers where it reaches >= 85% held-out.
-Also reports flip rates (E6): share of claims whose truth-probe sign or answer flips under the persona."""
+Also reports flip rates (E6): share of claims whose truth-probe sign or answer flips under the persona.
+E18: --adapters HIST CTRL replaces the persona/control system prompts with LoRAs merged into the no-prompt model."""
 import argparse, json, os, sys, time
 import pandas as pd
 import torch
@@ -14,6 +15,7 @@ from src.acts import last_token_acts
 from src.got import DS
 from src.probes import fit_lr, correct
 from src import setup as S
+from src.lora import merge
 
 p = argparse.ArgumentParser()
 p.add_argument("--model", default="Qwen/Qwen2.5-7B-Instruct")
@@ -21,6 +23,7 @@ p.add_argument("--setup", default="historical")
 p.add_argument("--n_got", type=int, default=400)
 p.add_argument("--seed", type=int, default=0)
 p.add_argument("--data", default=os.path.expanduser("~/pb/data/got"))
+p.add_argument("--adapters", nargs=2, default=None, help="E18: persona and control LoRA dirs")
 p.add_argument("--out", default=os.path.expanduser("~/pb/results"))
 a = p.parse_args()
 torch.manual_seed(a.seed)
@@ -60,7 +63,17 @@ def boot(x, B=1000):
 t0 = time.time()
 acts = lambda texts: last_token_acts(model, tok, texts, add_special_tokens=False).cuda()
 Hg = acts([wrap("none", s) for s in got.statement])
-Hc = {c: acts([wrap(c, s) for s in cl.statement]) for c in SYS}
+AD = dict(zip(("hist", "ctrl"), a.adapters)) if a.adapters else {}
+def under(c, f):
+    """f(text condition) under condition c: its system prompt, or (E18) the no-prompt text with c's LoRA merged."""
+    if c not in AD:
+        return f(c)
+    restore = merge(model, AD[c])
+    try:
+        return f("none")
+    finally:
+        restore()
+Hc = {c: under(c, lambda k: acts([wrap(k, s) for s in cl.statement])) for c in SYS}
 nL = Hg.shape[1]
 yg = torch.tensor(got.label.values, dtype=torch.float32, device="cuda")
 has_t = torch.tensor((cl.truth != "").values, device="cuda")
@@ -74,7 +87,7 @@ for l in range(nL):
 gate_t = [l for l in range(nL) if truth_acc[l] >= 0.85]
 lt = max(range(nL), key=lambda l: truth_acc[l])
 res = {"exp": "e12a_gate", "setup": a.setup, "paper": cfg["paper"], "model": a.model, "seed": a.seed, "system_prompts": SYS,
-       "n_claims": cl.cell.value_counts().to_dict(), "truth_acc": truth_acc, "gate_truth_layers": gate_t, "truth_readout": lt}
+       "adapters": AD or None, "n_claims": cl.cell.value_counts().to_dict(), "truth_acc": truth_acc, "gate_truth_layers": gate_t, "truth_readout": lt}
 We = None
 if ecol:
     has_e = torch.tensor((cl[ecol] != "").values, device="cuda")
@@ -92,7 +105,7 @@ if ecol:
     print(f"[{slug}/{a.setup}] endorsement layers>=85%: {res['gate_endorse_layers']}; cos(truth, endorse) l={lt}: "
           f"{res['cos_truth_endorse'][lt]:+.3f}", flush=True)
 
-T = {c: tf_logit([ask(c, s) for s in cl.statement]) for c in SYS}
+T = {c: under(c, lambda k: tf_logit([ask(k, s) for s in cl.statement])) for c in SYS}
 res["behavior_acc_vs_truth"] = {c: ((T[c][has_t.cpu()] > 0).float() == yt[has_t].cpu()).float().mean().item() for c in SYS}
 res["cells"] = {}
 for cell in CELLS:
@@ -120,5 +133,6 @@ tag = S.file_tag(a.setup)
 pr = {"truth": torch.stack([torch.cat([w, b[None]]) for w, b in Wt]).cpu()}
 if We:
     pr["endorse"] = torch.stack([torch.cat([w, b[None]]) for w, b in We]).cpu()
-torch.save(pr, f"{here}/probes_chat_{tag}{slug}.pt")
-json.dump(res, open(f"{a.out}/e12a_{a.setup}_gate_{slug}.json", "w"), indent=1)
+if not AD:  # the truth probe is trained without persona either way; LoRA runs reuse the prompt run's file
+    torch.save(pr, f"{here}/probes_chat_{tag}{slug}.pt")
+json.dump(res, open(f"{a.out}/e12a_{a.setup}_gate_{'lora_' if AD else ''}{slug}.json", "w"), indent=1)

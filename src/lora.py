@@ -1,4 +1,4 @@
-import json
+import json, os
 
 import torch
 from huggingface_hub import snapshot_download
@@ -8,7 +8,7 @@ from safetensors.torch import load_file
 def merge(model, adapter):
     """Merge a LoRA adapter into model weights in place (W += scale * B @ A; no peft in the env).
     Returns restore(), which puts the original weights back exactly (from a CPU copy)."""
-    path = snapshot_download(adapter)
+    path = adapter if os.path.isdir(adapter) else snapshot_download(adapter)  # local dir (E18) or hub id
     cfg = json.load(open(f"{path}/adapter_config.json"))
     r, alpha = cfg["r"], cfg["lora_alpha"]
     scale = alpha / r ** 0.5 if cfg.get("use_rslora") else alpha / r
