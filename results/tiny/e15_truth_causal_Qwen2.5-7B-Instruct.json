@@ -1,0 +1,190 @@
+{
+ "exp": "e15_truth_causal",
+ "model": "Qwen/Qwen2.5-7B-Instruct",
+ "seed": 0,
+ "k0": 14,
+ "readout": 20,
+ "rule": "E15: is the truth direction causal for the answer at all? Closes the hole in E5, where ablating the probe direction w\nleft no-persona answer accuracy at ~99%, so \"the persona bypasses w\" and \"the model never reads w\" were not separable.\n(a) Steering: add alpha * gap * w_hat at block l (all positions), no persona, yes/no question on the historical claims;\n    l = first gate layer k0 and the readout lt; gap = true-minus-false mean of h . w_hat on the wrapped claims.\n    20 random unit directions with the same norm as the null.\n    Rule (fixed before the run): w steers the answer at layer l if at alpha=+2 logit(True)-logit(False) rises and at\n    alpha=-2 it falls, both by more than the 95th percentile of |delta| over random directions, and >= 25% of answers\n    that disagreed with the steered label flip to it.\n(b) Iterative nullspace (INLP): at every layer >= k0, fit the GoT truth probe, project its direction out, refit, up to\n    K times (orthonormal basis Q_l). Ablate span(Q_l[:, :k]) at all layers >= k0 in the none and persona runs.\n    k* = smallest k in the grid where no-persona answer accuracy on the historical claims (all truth-labelled) <= 65%.\n    Rule (fixed before the run): at k*, the persona's behavioral effect on every stake cell is cut by >= 50% and by more\n    than 95% of random k*-dim subspace ablations -> consistent with the effect going through the truth subspace;\n    cut < 50% while truth reading is broken -> consistent with a path that bypasses it. No k reaching 65%: inconclusive.\nCoherence next to every intervention: mean token NLL of 100 held-out GoT statements (plain text) and p(True)+p(False).",
+ "baseline": {
+  "acc": 0.9375,
+  "tf_mass": 0.9999979734420776,
+  "nll": 4.0744755429305215,
+  "logit_sd": 19.110326766967773
+ },
+ "steer": {
+  "14": {
+   "gap": 2.1805882453918457,
+   "alpha": {
+    "-2.0": {
+     "delta": -0.1171875,
+     "flip_to_steered": 0.0,
+     "acc": 0.9375,
+     "tf_mass": 0.9999973773956299,
+     "nll": 4.077507806418205
+    },
+    "-1.0": {
+     "delta": -0.0546875,
+     "flip_to_steered": 0.0,
+     "acc": 0.9375,
+     "tf_mass": 0.9999978542327881,
+     "nll": 4.076293239389875
+    },
+    "1.0": {
+     "delta": 0.0625,
+     "flip_to_steered": 0.0,
+     "acc": 1.0,
+     "tf_mass": 0.9999980926513672,
+     "nll": 4.072794198141404
+    },
+    "2.0": {
+     "delta": 0.1015625,
+     "flip_to_steered": 0.0,
+     "acc": 1.0,
+     "tf_mass": 0.999998152256012,
+     "nll": 4.076340970619717
+    }
+   },
+   "null_abs_delta": [
+    0.28125,
+    0.1640625
+   ],
+   "pass": false
+  },
+  "20": {
+   "gap": 6.598512649536133,
+   "alpha": {
+    "-2.0": {
+     "delta": -1.515625,
+     "flip_to_steered": 0.0,
+     "acc": 0.9375,
+     "tf_mass": 0.999998152256012,
+     "nll": 4.105447246510788
+    },
+    "-1.0": {
+     "delta": -0.703125,
+     "flip_to_steered": 0.0,
+     "acc": 0.9375,
+     "tf_mass": 0.9999980926513672,
+     "nll": 4.088503365839079
+    },
+    "1.0": {
+     "delta": 0.7421875,
+     "flip_to_steered": 0.0,
+     "acc": 1.0,
+     "tf_mass": 0.9999980926513672,
+     "nll": 4.068327336973143
+    },
+    "2.0": {
+     "delta": 1.6015625,
+     "flip_to_steered": 0.0,
+     "acc": 1.0,
+     "tf_mass": 0.9999979138374329,
+     "nll": 4.071866398604315
+    }
+   },
+   "null_abs_delta": [
+    0.0390625,
+    0.25
+   ],
+   "pass": false
+  }
+ },
+ "inlp_heldout_probe_acc_at_readout": {
+  "0": 1.0,
+  "1": 1.0
+ },
+ "inlp_grid": {
+  "1": {
+   "acc": 1.0,
+   "tf_mass": 0.999997615814209,
+   "nll": 4.076366383834242,
+   "logit_sd": 16.972217559814453
+  },
+  "4": {
+   "acc": 1.0,
+   "tf_mass": 0.9999964237213135,
+   "nll": 4.9237957611627,
+   "logit_sd": 16.070085525512695
+  }
+ },
+ "kstar": null,
+ "random_subspace_at_kstar": [],
+ "setups": {
+  "historical": {
+   "persona_effect": {
+    "era_belief": 24.40625,
+    "modern_truth": -17.25,
+    "shared_truth": -3.4375,
+    "shared_false": 2.03125
+   },
+   "by_k": {
+    "1": {
+     "effect": {
+      "era_belief": 21.1875,
+      "modern_truth": -15.625,
+      "shared_truth": -3.15625,
+      "shared_false": 3.187500238418579
+     },
+     "reduction": {
+      "era_belief": 0.13188220230473746,
+      "modern_truth": 0.09420289855072461,
+      "shared_truth": 0.08181818181818179,
+      "shared_false": -0.5692308866060698
+     }
+    },
+    "4": {
+     "effect": {
+      "era_belief": 18.5625,
+      "modern_truth": -14.5625,
+      "shared_truth": -3.4375,
+      "shared_false": 3.125
+     },
+     "reduction": {
+      "era_belief": 0.23943661971830987,
+      "modern_truth": 0.1557971014492754,
+      "shared_truth": 0.0,
+      "shared_false": -0.5384615384615385
+     }
+    }
+   }
+  },
+  "opposite": {
+   "persona_effect": {
+    "era_belief": 2.71875,
+    "modern_truth": -26.5,
+    "shared_truth": -31.0625,
+    "shared_false": 3.90625
+   },
+   "by_k": {
+    "1": {
+     "effect": {
+      "era_belief": -0.0625,
+      "modern_truth": -19.5625,
+      "shared_truth": -26.5625,
+      "shared_false": 3.625000238418579
+     },
+     "reduction": {
+      "era_belief": 1.0229885057471264,
+      "modern_truth": 0.2617924528301887,
+      "shared_truth": 0.14486921529175045,
+      "shared_false": 0.0719999389648438
+     }
+    },
+    "4": {
+     "effect": {
+      "era_belief": -1.0625,
+      "modern_truth": -18.625,
+      "shared_truth": -24.625,
+      "shared_false": 3.625
+     },
+     "reduction": {
+      "era_belief": 1.3908045977011494,
+      "modern_truth": 0.2971698113207547,
+      "shared_truth": 0.20724346076458755,
+      "shared_false": 0.07199999999999995
+     }
+    }
+   }
+  }
+ }
+}

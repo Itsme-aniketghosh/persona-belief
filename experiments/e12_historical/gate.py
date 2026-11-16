@@ -99,6 +99,7 @@ for cell in CELLS:
     m = torch.tensor(cells == cell)
     R = {"behavior_logit": {c: boot(T[c][m]) for c in SYS}, "probe": {},
          "d_behavior_hist": boot((T["hist"] - T["none"])[m]), "d_behavior_ctrl": boot((T["ctrl"] - T["none"])[m]),
+         "d_behavior_hist_ctrl": boot((T["hist"] - T["ctrl"])[m]),  # paired persona-vs-control (E17)
          "flip_behavior_hist": ((T["hist"] > 0) != (T["none"] > 0))[m].float().mean().item(),
          "flip_behavior_ctrl": ((T["ctrl"] > 0) != (T["none"] > 0))[m].float().mean().item()}
     for l in gate_t:
@@ -106,6 +107,7 @@ for cell in CELLS:
         R["probe"][str(l)] = {c: boot(s[c][m]) for c in SYS}
         R["probe"][str(l)]["d_hist"] = boot((s["hist"] - s["none"])[m])
         R["probe"][str(l)]["d_ctrl"] = boot((s["ctrl"] - s["none"])[m])
+        R["probe"][str(l)]["d_hist_ctrl"] = boot((s["hist"] - s["ctrl"])[m])
         R["probe"][str(l)]["flip_hist"] = ((s["hist"] > 0) != (s["none"] > 0))[m].float().mean().item()
         R["probe"][str(l)]["flip_ctrl"] = ((s["ctrl"] > 0) != (s["none"] > 0))[m].float().mean().item()
     res["cells"][cell] = R

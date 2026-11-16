@@ -1,0 +1,289 @@
+{
+ "exp": "e16_block",
+ "model": "google/gemma-2-9b-it",
+ "rule": "(fixed before the run): \"direct path\" if blocking the statement keeps >= 50% of the effect on every stake cell;\n\"statement path\" if blocking the tail keeps >= 50%. Interpretable only if no-persona accuracy on truth-labelled claims\nunder that block stays >= 85% and p(True)+p(False) >= 0.5.",
+ "tail_from_k": [
+  1,
+  10,
+  17,
+  21,
+  25,
+  29,
+  34,
+  38
+ ],
+ "setups": {
+  "historical": {
+   "none": {
+    "effect": {
+     "era_belief": 21.140625,
+     "modern_truth": -20.015625,
+     "shared_truth": -2.4375,
+     "shared_false": 2.609375
+    },
+    "acc_none": 0.9375,
+    "tf_mass_none": 0.9999827146530151
+   },
+   "tail": {
+    "effect": {
+     "era_belief": 10.03125,
+     "modern_truth": -2.570312261581421,
+     "shared_truth": -0.21875,
+     "shared_false": -0.359375
+    },
+    "acc_none": 1.0,
+    "tf_mass_none": 0.0005464855348691344
+   },
+   "statement": {
+    "effect": {
+     "era_belief": 12.046875,
+     "modern_truth": -3.9375,
+     "shared_truth": -1.796875,
+     "shared_false": 2.328125
+    },
+    "acc_none": 1.0,
+    "tf_mass_none": 0.9999681711196899
+   },
+   "both": {
+    "effect": {
+     "era_belief": 0.023437023162841797,
+     "modern_truth": -0.1171875,
+     "shared_truth": -0.1093747615814209,
+     "shared_false": -0.0078122615814208984
+    },
+    "acc_none": 1.0,
+    "tf_mass_none": 0.00011631959932856262
+   },
+   "tail_from_k": {
+    "10": {
+     "effect": {
+      "era_belief": 10.7734375,
+      "modern_truth": -2.4453125,
+      "shared_truth": -0.4999997615814209,
+      "shared_false": 0.0390625
+     },
+     "acc_none": 1.0,
+     "tf_mass_none": 0.0012374133802950382
+    },
+    "17": {
+     "effect": {
+      "era_belief": 14.515625,
+      "modern_truth": -5.40625,
+      "shared_truth": -0.5624998807907104,
+      "shared_false": -0.7734373807907104
+     },
+     "acc_none": 0.9375,
+     "tf_mass_none": 0.04522372782230377
+    },
+    "21": {
+     "effect": {
+      "era_belief": 24.2421875,
+      "modern_truth": -16.740234375,
+      "shared_truth": -0.78125,
+      "shared_false": -1.017578125
+     },
+     "acc_none": 0.9375,
+     "tf_mass_none": 0.7717200517654419
+    },
+    "25": {
+     "effect": {
+      "era_belief": 26.234375,
+      "modern_truth": -27.2603759765625,
+      "shared_truth": -1.890625,
+      "shared_false": 1.232421636581421
+     },
+     "acc_none": 0.9375,
+     "tf_mass_none": 0.971243143081665
+    },
+    "29": {
+     "effect": {
+      "era_belief": 25.078125,
+      "modern_truth": -26.90234375,
+      "shared_truth": -1.96875,
+      "shared_false": 3.412109375
+     },
+     "acc_none": 0.9375,
+     "tf_mass_none": 0.9374440312385559
+    },
+    "34": {
+     "effect": {
+      "era_belief": 27.6015625,
+      "modern_truth": -26.9765625,
+      "shared_truth": -2.46875,
+      "shared_false": 3.1484375
+     },
+     "acc_none": 0.9375,
+     "tf_mass_none": 0.9999334216117859
+    },
+    "38": {
+     "effect": {
+      "era_belief": 24.296875,
+      "modern_truth": -23.28125,
+      "shared_truth": -2.71875,
+      "shared_false": 2.875
+     },
+     "acc_none": 0.9375,
+     "tf_mass_none": 0.9999209046363831
+    }
+   },
+   "kept": {
+    "tail": {
+     "era_belief": 0.4745011086474501,
+     "modern_truth": 0.1284152886348251,
+     "shared_truth": 0.08974358974358974,
+     "shared_false": -0.1377245508982036
+    },
+    "statement": {
+     "era_belief": 0.5698447893569845,
+     "modern_truth": 0.19672131147540983,
+     "shared_truth": 0.7371794871794872,
+     "shared_false": 0.8922155688622755
+    },
+    "both": {
+     "era_belief": 0.0011086248946207502,
+     "modern_truth": 0.00585480093676815,
+     "shared_truth": 0.04487169705904447,
+     "shared_false": -0.002993920606053518
+    }
+   },
+   "direct_path": false,
+   "statement_path": null
+  },
+  "partisan": {
+   "none": {
+    "effect": {
+     "lib_contested": 6.703125,
+     "con_contested": -8.09375,
+     "shared_truth": -0.359375,
+     "shared_false": 1.28125
+    },
+    "acc_none": 1.0,
+    "tf_mass_none": 0.9962645769119263
+   },
+   "tail": {
+    "effect": {
+     "lib_contested": 1.16015625,
+     "con_contested": -0.2265625,
+     "shared_truth": -0.3671875,
+     "shared_false": 2.000000238418579
+    },
+    "acc_none": 1.0,
+    "tf_mass_none": 0.0011591378133744001
+   },
+   "statement": {
+    "effect": {
+     "lib_contested": 4.625,
+     "con_contested": -5.0,
+     "shared_truth": -0.34375,
+     "shared_false": 0.453125
+    },
+    "acc_none": 1.0,
+    "tf_mass_none": 0.9970667362213135
+   },
+   "both": {
+    "effect": {
+     "lib_contested": -0.0624997615814209,
+     "con_contested": -0.0078125,
+     "shared_truth": -0.17968785762786865,
+     "shared_false": 0.125
+    },
+    "acc_none": 1.0,
+    "tf_mass_none": 8.359587809536606e-05
+   },
+   "tail_from_k": {
+    "10": {
+     "effect": {
+      "lib_contested": 1.0859375,
+      "con_contested": -0.306640625,
+      "shared_truth": -0.5937497615814209,
+      "shared_false": 2.343749761581421
+     },
+     "acc_none": 1.0,
+     "tf_mass_none": 0.0022922453936189413
+    },
+    "17": {
+     "effect": {
+      "lib_contested": 1.287841558456421,
+      "con_contested": -1.2822265625,
+      "shared_truth": -2.359375,
+      "shared_false": 3.781250238418579
+     },
+     "acc_none": 1.0,
+     "tf_mass_none": 0.09850317984819412
+    },
+    "21": {
+     "effect": {
+      "lib_contested": 4.93359375,
+      "con_contested": -9.162109375,
+      "shared_truth": -1.625,
+      "shared_false": 2.43359375
+     },
+     "acc_none": 1.0,
+     "tf_mass_none": 0.45411765575408936
+    },
+    "25": {
+     "effect": {
+      "lib_contested": 7.671875,
+      "con_contested": -12.85546875,
+      "shared_truth": -1.703125,
+      "shared_false": 0.3193359375
+     },
+     "acc_none": 1.0,
+     "tf_mass_none": 0.49849948287010193
+    },
+    "29": {
+     "effect": {
+      "lib_contested": 6.328125,
+      "con_contested": -12.73828125,
+      "shared_truth": -2.125,
+      "shared_false": 0.615234375
+     },
+     "acc_none": 1.0,
+     "tf_mass_none": 0.4652392268180847
+    },
+    "34": {
+     "effect": {
+      "lib_contested": 8.46875,
+      "con_contested": -11.78125,
+      "shared_truth": -0.984375,
+      "shared_false": 1.265625
+     },
+     "acc_none": 1.0,
+     "tf_mass_none": 0.9008388519287109
+    },
+    "38": {
+     "effect": {
+      "lib_contested": 7.5625,
+      "con_contested": -9.359375,
+      "shared_truth": -0.671875,
+      "shared_false": 1.53125
+     },
+     "acc_none": 1.0,
+     "tf_mass_none": 0.9909712076187134
+    }
+   },
+   "kept": {
+    "tail": {
+     "lib_contested": 0.17307692307692307,
+     "con_contested": 0.027992277992277992,
+     "shared_truth": 1.0217391304347827,
+     "shared_false": 1.560975795838891
+    },
+    "statement": {
+     "lib_contested": 0.6899766899766899,
+     "con_contested": 0.6177606177606177,
+     "shared_truth": 0.9565217391304348,
+     "shared_false": 0.35365853658536583
+    },
+    "both": {
+     "lib_contested": -0.009323973755736452,
+     "con_contested": 0.0009652509652509653,
+     "shared_truth": 0.5000009951384171,
+     "shared_false": 0.0975609756097561
+    }
+   },
+   "direct_path": true,
+   "statement_path": null
+  }
+ }
+}

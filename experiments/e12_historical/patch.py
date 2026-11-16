@@ -4,7 +4,10 @@ tokens with the source run's values. Source = a condition (hist = persona, ctrl 
 the no-persona text (emergent misalignment). Format "probe": read truth/endorsement probes at the statement's last
 token. Format "ask": the yes/no question; read logit(True) - logit(False) (behavior under patching).
 Rule (fixed before the run): some layer at or before the readout recovers >= 50% of the source's effect on every
-stake cell, while shared cells move less than half as much as the smallest stake cell."""
+stake cell, while shared cells move less than half as much as the smallest stake cell.
+Options added for E16/E17: --region suffix|both patches the tokens after the statement (the question tail and answer
+position) or statement+tail; --base ctrl patches the persona into the control run instead of the no-persona run
+(post-hoc contrast for the partisan setup, labelled post_hoc in the output)."""
 import argparse, json, os, sys, time
 import torch
 
@@ -16,6 +19,8 @@ p.add_argument("--model", default="Qwen/Qwen2.5-7B-Instruct")
 p.add_argument("--setup", default="historical")
 p.add_argument("--format", default="probe", choices=["probe", "ask"])
 p.add_argument("--adapter", default=None, help="LoRA source instead of the persona/control conditions")
+p.add_argument("--region", default="statement", choices=["statement", "suffix", "both"])
+p.add_argument("--base", default="none", help="condition patched into (E17 contrast: ctrl)")
 p.add_argument("--max_claims", type=int, default=None, help="tiny pass")
 p.add_argument("--out", default=os.path.expanduser("~/pb/results"))
 p.add_argument("--e0_results", default=os.path.expanduser("~/pb/results"))
@@ -91,13 +96,13 @@ def forward(b, caps=None, put=None):
 t0 = time.time()
 bs = 16
 batches = [list(range(i, min(i + bs, len(cl)))) for i in range(0, len(cl), bs)]
-sources = [a.adapter] if a.adapter else ["hist", "ctrl"]
+sources = [a.adapter] if a.adapter else [c for c in ("hist", "ctrl") if c != a.base]
 res = {"exp": "e12c_patch", "setup": a.setup, "paper": cfg["paper"], "model": a.model, "format": a.format,
        "truth_readout": lt if a.format == "probe" else "logit(True)-logit(False)", "rule": __doc__.split("Rule")[1].strip(),
-       "sources": sources, "full_effect": {}, "patch": {}}
+       "sources": sources, "region": a.region, "base": a.base, "post_hoc": a.base != "none", "full_effect": {}, "patch": {}}
 none_out, src_out, src_caps, meta = [], {s: [] for s in sources}, {s: [] for s in sources}, []
 for ix in batches:
-    bn, spn = batch("none", ix)
+    bn, spn = batch(a.base, ix)
     none_out.append(forward(bn))
     Km = max(e1 for _, e1 in spn)
     for s in sources:
@@ -115,7 +120,9 @@ for ix in batches:
         src_caps[s].append({j: caps[j] for j in caps})
         if a.adapter:
             restore()
-    mask = torch.stack([(torch.arange(Km, 0, -1, device=dev) > e0) & (torch.arange(Km, 0, -1, device=dev) <= e1) for e0, e1 in spn])
+    pos = torch.arange(Km, 0, -1, device=dev)  # distance from the end
+    mask = torch.stack([{"statement": (pos > e0) & (pos <= e1), "suffix": pos <= e0, "both": pos <= e1}[a.region] for e0, e1 in spn])
+    assert mask.any(1).all(), f"empty patch region {a.region}"
     meta.append((bn, mask))
 none_all = torch.cat(none_out)
 cm = {c: torch.tensor(cells == c, device=dev) for c in CELLS}
@@ -143,6 +150,7 @@ for s in sources:
     for l in range(1, last + 1, max(1, last // 8)):
         e = res["patch"][s][str(l)]
         print(f"   patch@{l:2d}: " + ", ".join(f"{c}:{e[c]['d']:+.2f}(flip {e[c]['flip']:.0%})" for c in CELLS), flush=True)
-name = f"e12c_{a.setup}_patch_{a.format}_" + (a.adapter.split("/")[-1] + "_" if a.adapter else "") + f"{slug}.json"
+name = (f"e12c_{a.setup}_patch_{a.format}_" + (a.adapter.split("/")[-1] + "_" if a.adapter else "")
+        + (f"{a.region}_" if a.region != "statement" else "") + (f"base-{a.base}_" if a.base != "none" else "") + f"{slug}.json")
 json.dump(res, open(f"{a.out}/{name}", "w"))
 print(f"done in {(time.time() - t0) / 60:.1f} min")
