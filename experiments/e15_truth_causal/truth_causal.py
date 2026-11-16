@@ -168,7 +168,7 @@ for l in sorted({k0, lt}):
 
 # (b) INLP basis per layer, from chat-wrapped GoT (the gate's probe training set)
 K = max(a.kgrid)
-Q, probe_acc = {}, {}
+Q, probe_acc, fallback = {}, {}, {}
 for l in layers:
     X = Hg[:, l].cuda()
     basis = []
@@ -180,12 +180,20 @@ for l in layers:
             Hp = Hc[:, l] - (Hc[:, l] @ Qm) @ Qm.T if basis else Hc[:, l]
             probe_acc[i] = correct(Hp, yh, w, b).mean().item()
         u = w - Qm @ (Qm.T @ w) if basis else w
-        u = u - Qm @ (Qm.T @ u) if basis else u  # second Gram-Schmidt pass: one pass drifts by k~100 once w is mostly in span
+        u = u - Qm @ (Qm.T @ u) if basis else u  # second Gram-Schmidt pass
+        if not torch.isfinite(u).all() or u.norm() < 1e-3 * w.norm():
+            # post-hoc (E20): fit_lr's per-dim rescale (w/sd) can leave w almost entirely in span(Qm) or NaN once little
+            # linear signal is left; the mean difference of Xp is a combination of Xp rows, so it lies in the complement
+            u = Xp[yg > 0.5].mean(0) - Xp[yg < 0.5].mean(0)
+            u = u - Qm @ (Qm.T @ u) if basis else u
+            fallback[l] = fallback.get(l, 0) + 1
         basis.append(F.normalize(u, dim=0))
     Q[l] = torch.stack(basis, 1)
-    assert (Q[l].T @ Q[l] - torch.eye(K, device=dev)).abs().max() < 1e-3, "basis not orthonormal"
+    err = (Q[l].T @ Q[l] - torch.eye(K, device=dev)).abs().max()
+    assert err < 1e-3, f"basis not orthonormal at l={l}: err {err:.3g}, fallbacks {fallback.get(l, 0)}, nonfinite {(~torch.isfinite(Q[l])).sum().item()}"
 del Hg
 res["inlp_heldout_probe_acc_at_readout"] = probe_acc
+res["inlp_md_fallback_per_layer"] = fallback
 print(f"[{slug}] INLP basis K={K} at {len(layers)} layers; held-out probe acc at l={lt} after i removals: "
       + ", ".join(f"{i}:{x:.2f}" for i, x in probe_acc.items()) + f" | {time.time() - t0:.0f}s", flush=True)
 
