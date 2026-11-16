@@ -103,13 +103,13 @@ Starting INLP at layer 1 with up to 128 directions per layer (E20, statement sit
 
 | E20 statement site | Qwen | Llama | OLMo |
 |---|---|---|---|
-| k where answer accuracy first drops to ≤ 0.65 (k*) | 64 (acc 0.57) | 128 (acc 0.52; True/False mass 0.06) | never (acc 0.86 at k = 128) |
-| Same-size random subspaces at that k, answer acc | 0.56–0.89 | 0.48–0.50 | 0.79–0.91 (k = 128) |
-| Raw reduction of the persona effect at k = 64 (era / modern) | 102% / 85% | 94% / 76% | 37% / 55% |
-| Normalized reduction vs random q95, historical (at k*, else k = 128) | 111% / 16% vs 102% / 121% | 99% / 7% vs 382% / 330% | −6% / 99% vs 116% / 90% |
-| Layers whose basis stopped early (no signal left) | 1 (110 directions) | 1 (113) | 2 (117), 4 (122) |
+| k where answer accuracy first drops to ≤ 0.65 (k*) | 64 (acc 0.57) | 128 (acc 0.52; True/False mass 0.00) | never (acc 0.86 at k = 128) |
+| Same-size random subspaces at that k, answer acc | 0.56–0.89 | 0.46–0.50 | 0.79–0.91 (k = 128) |
+| Raw reduction of the persona effect at k = 64 (era / modern) | 102% / 85% | 87% / 90% | 37% / 55% |
+| Normalized reduction vs random q95, historical (at k*, else k = 128) | 111% / 16% vs 102% / 121% | −16% / 221% vs 245% / 603% | −6% / 99% vs 116% / 90% |
+| Layers whose basis stopped early (no signal left) | 1 (110 directions) | 1 (103) | 2 (117), 4 (122) |
 
-At the size where the answer breaks, random subspaces break it about as much (Llama) or the normalized comparison can't separate INLP from random (Qwen, OLMo). INLP is the weakest test in this report; sections 2–4 carry the argument. The stop rule for exhausted layers and the size-matched random control were added after the first E20 runs crashed, so they are post hoc.
+At the size where the answer breaks, random subspaces break it about as much (Llama) or the normalized comparison can't separate INLP from random (Qwen, OLMo). INLP is the weakest test in this report; sections 2–4 carry the argument. The stop rule for exhausted layers and the size-matched random control were added after the first E20 runs crashed, so they are post hoc. Llama ran twice by accident (L40S and A100); floating-point differences changed the details (layer 1 stopped at 113 vs 103 directions) but not the verdict. The table and `results/` hold the A100 run.
 
 ## 4. r = 0.94 and still off the causal path
 
