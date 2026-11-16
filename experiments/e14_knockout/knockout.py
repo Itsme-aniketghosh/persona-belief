@@ -24,6 +24,7 @@ p.add_argument("--alphas", type=float, nargs="+", default=[1.0, 2.0])
 p.add_argument("--n_null", type=int, default=20)
 p.add_argument("--n", type=int, default=240)
 p.add_argument("--data", default=os.path.expanduser("~/pb/data/got"))
+p.add_argument("--tag", default="", help="output file suffix (E21: larger alphas on Qwen)")
 p.add_argument("--out", default=os.path.expanduser("~/pb/results"))
 p.add_argument("--e0_results", default=os.path.expanduser("~/pb/results"))
 a = p.parse_args()
@@ -54,6 +55,25 @@ def readout(hooks):
             h.remove()
     return ((H * W).sum(-1) + B)[:, reads]  # [n, R]
 
+nll_texts = heldout_generic(a.data, 100, 7).statement.tolist()
+@torch.no_grad()
+def nll(hooks, bs=25):
+    """Coherence: mean token NLL of held-out plain-text statements under the given hooks."""
+    hs = [model.model.layers[k - 1].register_forward_hook(fn) for k, fn in hooks]
+    tok.padding_side = "right"
+    tot, n = 0.0, 0
+    try:
+        for i in range(0, len(nll_texts), bs):
+            b = tok(nll_texts[i:i + bs], return_tensors="pt", padding=True).to(model.device)
+            lg = model(**b).logits[:, :-1].float()
+            m = b.attention_mask[:, 1:].bool()
+            tot += F.cross_entropy(lg.transpose(1, 2), b.input_ids[:, 1:], reduction="none")[m].sum().item(); n += m.sum().item()
+    finally:
+        tok.padding_side = "left"
+        for h in hs:
+            h.remove()
+    return tot / n
+
 def add(vec):
     def hk(mod, inp, o):
         return (o[0] + vec,) + tuple(o[1:]) if isinstance(o, tuple) else o + vec
@@ -78,7 +98,7 @@ for t in a.traits:
     for al in a.alphas:
         sv = (al * v).to(torch.bfloat16)
         base = (readout([(l, add(sv))]) - s0).mean(0)  # [R]
-        out = {"d_steer": base.tolist()}
+        out = {"d_steer": base.tolist(), "nll_steer": nll([(l, add(sv))]), "nll_base": nll([])}
         for name, k in (("ko_same", l), ("ko_before", l - 2), ("ko_plus2", l + 2), ("ko_plus4", l + 4)):
             hooks = [(l, add(sv)), (k, ko(u))] if k != l else [(l, add(sv)), (l, ko(u))]  # same layer: hooks run in order
             k0 = (readout([(k, ko(u))]) - s0).mean(0)  # KO alone, no steering
@@ -94,4 +114,4 @@ for t in a.traits:
               f"before {out['ko_before']['retained'][-1]:.0%} +2 {out['ko_plus2']['retained'][-1]:.0%} +4 {out['ko_plus4']['retained'][-1]:.0%} "
               f"| random +2 min {min(x[-1] for x in rk):.0%} | {time.time() - t0:.0f}s", flush=True)
     res["traits"][t] = T
-json.dump(res, open(f"{a.out}/e14_knockout_{slug}.json", "w"), indent=1)
+json.dump(res, open(f"{a.out}/e14_knockout_{slug}{a.tag}.json", "w"), indent=1)

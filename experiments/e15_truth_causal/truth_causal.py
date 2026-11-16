@@ -12,7 +12,13 @@ left no-persona answer accuracy at ~99%, so "the persona bypasses w" and "the mo
     Rule (fixed before the run): at k*, the persona's behavioral effect on every stake cell is cut by >= 50% and by more
     than 95% of random k*-dim subspace ablations -> consistent with the effect going through the truth subspace;
     cut < 50% while truth reading is broken -> consistent with a path that bypasses it. No k reaching 65%: inconclusive.
-Coherence next to every intervention: mean token NLL of 100 held-out GoT statements (plain text) and p(True)+p(False)."""
+Coherence next to every intervention: mean token NLL of 100 held-out GoT statements (plain text) and p(True)+p(False).
+E20 (options, rule fixed before the E20 runs): --site answer trains the probes at the last token of the yes/no question
+instead of the statement; --from_layer starts the ablation earlier than the gate; the random-subspace control always runs,
+at k* or else at --control_k. Normalized reduction nr = 1 - (effect_k / logit_sd_k) / (effect_0 / logit_sd_0).
+Verdict at k_c (= k* if reached, else control_k): "through" if nr >= 50% on every stake cell and above 95% of random
+subspaces; "bypass" if no-persona accuracy <= 65% and nr < 50% on every stake cell; otherwise "not_used" (removing the
+subspace neither breaks truth answering nor removes the persona effect beyond what general damage does)."""
 import argparse, json, os, sys, time
 from contextlib import contextmanager
 import pandas as pd
@@ -33,6 +39,10 @@ p.add_argument("--n_null", type=int, default=20)
 p.add_argument("--n_null_sub", type=int, default=10)
 p.add_argument("--n_got", type=int, default=400)
 p.add_argument("--inlp_iters", type=int, default=100)
+p.add_argument("--site", default="statement", choices=["statement", "answer"])
+p.add_argument("--from_layer", type=int, default=None, help="first ablated layer (default: first gated layer)")
+p.add_argument("--control_k", type=int, default=None, help="random-subspace control k when k* is not reached (default max kgrid)")
+p.add_argument("--tag", default="", help="output file suffix")
 p.add_argument("--max_claims", type=int, default=None, help="tiny pass")
 p.add_argument("--data", default=os.path.expanduser("~/pb/data/got"))
 p.add_argument("--out", default=os.path.expanduser("~/pb/results"))
@@ -64,7 +74,7 @@ gate = json.load(open(f"{a.e0_results}/e12a_historical_gate_{slug}.json"))
 k0, lt = min(gate["gate_truth_layers"]), gate["truth_readout"]
 W = torch.load(f"{e12}/probes_chat_{slug}.pt")["truth"][:, :-1].cuda()
 L = W.shape[0] - 1
-layers = list(range(k0, L + 1))
+feat = wrap if a.site == "statement" else ask_h  # where the probes read
 
 @contextmanager
 def hooked(fns):
@@ -109,12 +119,23 @@ def nll(bs=25):
 
 t0 = time.time()
 yh = torch.tensor(pd.to_numeric(cl_h.truth).values, dtype=torch.float32, device=dev)
-Hc = last_token_acts(model, tok, [wrap("none", s) for s in cl_h.statement], add_special_tokens=False).cuda()
+Hc = last_token_acts(model, tok, [feat("none", s) for s in cl_h.statement], add_special_tokens=False).cuda()
+got = pd.concat([pd.read_csv(f"{a.data}/{d}.csv").sample(frac=1, random_state=0).groupby("label").head(a.n_got // 2) for d in DS])
+yg = torch.tensor(got.label.values, dtype=torch.float32, device=dev)
+Hg = last_token_acts(model, tok, [feat("none", s) for s in got.statement], add_special_tokens=False)
+if a.site == "answer":  # probe, gate and readout at the answer position
+    Wb = [fit_lr(Hg[:, l].cuda(), yg) for l in range(L + 1)]
+    W = torch.stack([w for w, _ in Wb])
+    acc_a = [correct(Hc[:, l], yh, *Wb[l]).mean().item() for l in range(L + 1)]
+    gl = [l for l in range(L + 1) if acc_a[l] >= 0.85]
+    assert gl, "answer-site probe fails the 85% gate at every layer"
+    k0, lt = min(gl), max(gl, key=lambda l: acc_a[l])
+layers = list(range(a.from_layer or k0, L + 1))
 texts_none = [ask_h("none", s) for s in cl_h.statement]
 d0, m0 = tf(texts_none)
 acc = lambda d: ((d > 0).float() == yh).float().mean().item()
 nll0 = nll()
-res = {"exp": "e15_truth_causal", "model": a.model, "seed": 0, "k0": k0, "readout": lt, "rule": __doc__,
+res = {"exp": "e15_truth_causal", "model": a.model, "seed": 0, "site": a.site, "k0": k0, "readout": lt, "ablated_layers": layers, "rule": __doc__,
        "baseline": {"acc": acc(d0), "tf_mass": m0.mean().item(), "nll": nll0, "logit_sd": d0.std().item()}, "steer": {}}
 print(f"[{slug}] baseline acc {acc(d0):.3f}, T/F mass {m0.mean():.3f}, NLL {nll0:.3f} | k0={k0} lt={lt}", flush=True)
 
@@ -146,9 +167,6 @@ for l in sorted({k0, lt}):
           f"NLL {x['nll']:.2f}" for k, x in R["alpha"].items()) + f" | null |Δ| q95 {q:.2f} | pass {R['pass']} | {time.time() - t0:.0f}s", flush=True)
 
 # (b) INLP basis per layer, from chat-wrapped GoT (the gate's probe training set)
-got = pd.concat([pd.read_csv(f"{a.data}/{d}.csv").sample(frac=1, random_state=0).groupby("label").head(a.n_got // 2) for d in DS])
-yg = torch.tensor(got.label.values, dtype=torch.float32, device=dev)
-Hg = last_token_acts(model, tok, [wrap("none", s) for s in got.statement], add_special_tokens=False)
 K = max(a.kgrid)
 Q, probe_acc = {}, {}
 for l in layers:
@@ -179,15 +197,16 @@ for k in a.kgrid:
         d, m = tf(texts_none); nl = nll()
     grid[k] = {"acc": acc(d), "tf_mass": m.mean().item(), "nll": nl, "logit_sd": d.std().item()}
 kstar = next((k for k in a.kgrid if grid[k]["acc"] <= 0.65), None)
-rand_sub = [{l: torch.linalg.qr(torch.randn(Q[l].shape[0], kstar, device=dev))[0] for l in layers} for _ in range(a.n_null_sub)] if kstar else []
+kc = kstar or a.control_k or K
+rand_sub = [{l: torch.linalg.qr(torch.randn(Q[l].shape[0], kc, device=dev))[0] for l in layers} for _ in range(a.n_null_sub)]
 rand_stats = []
 for sub in rand_sub:
     with hooked(proj(sub)):
         d, m = tf(texts_none); nl = nll()
     rand_stats.append({"acc": acc(d), "tf_mass": m.mean().item(), "nll": nl})
-res.update({"inlp_grid": grid, "kstar": kstar, "random_subspace_at_kstar": rand_stats, "setups": {}})
+res.update({"inlp_grid": grid, "kstar": kstar, "k_control": kc, "random_subspace_at_kcontrol": rand_stats, "setups": {}})
 print(f"[{slug}] INLP no-persona acc by k: " + ", ".join(f"{k}:{g['acc']:.2f}(NLL {g['nll']:.2f}, mass {g['tf_mass']:.2f})" for k, g in grid.items())
-      + f" | k*={kstar} | random k* acc " + ", ".join(f"{r['acc']:.2f}" for r in rand_stats), flush=True)
+      + f" | k*={kstar} | random k={kc} acc " + ", ".join(f"{r['acc']:.2f}" for r in rand_stats), flush=True)
 
 for name in a.setups:
     cfg, cl = claims(name)
@@ -198,24 +217,27 @@ for name in a.setups:
     def effect(fns):
         with hooked(fns):
             dn, dh = tf(tn)[0], tf(th)[0]
-        return {c: (dh - dn)[cm[c]].mean().item() for c in CELLS}
-    base = effect({})
+        return {c: (dh - dn)[cm[c]].mean().item() for c in CELLS}, dn.std().item()
+    base, sd0 = effect({})
     red = lambda e: {c: 1 - e[c] / base[c] if abs(base[c]) > 1e-6 else None for c in CELLS}
-    R = {"persona_effect": base, "by_k": {}}
-    for k in a.kgrid:
-        e = effect(proj({l: Q[l][:, :k] for l in layers}))
-        R["by_k"][str(k)] = {"effect": e, "reduction": red(e)}
-    if kstar:
-        nr = [red(effect(proj(sub))) for sub in rand_sub]
-        q95 = {c: torch.tensor([r[c] for r in nr]).quantile(0.95).item() for c in STAKE}
-        rk = R["by_k"][str(kstar)]["reduction"]
-        R.update({"null_reduction_at_kstar": nr, "null_q95": q95,
-                  "through_truth_subspace": all(rk[c] >= 0.5 and rk[c] > q95[c] for c in STAKE),
-                  "bypass": all(rk[c] < 0.5 for c in STAKE)})
+    nred = lambda e, sd: {c: 1 - (e[c] / sd) / (base[c] / sd0) if abs(base[c]) > 1e-6 else None for c in CELLS}
+    R = {"persona_effect": base, "logit_sd_none": sd0, "by_k": {}}
+    for k in sorted(set(a.kgrid) | {kc}):
+        e, sd = effect(proj({l: Q[l][:, :k] for l in layers}))
+        R["by_k"][str(k)] = {"effect": e, "reduction": red(e), "norm_reduction": nred(e, sd), "logit_sd_none": sd}
+    nr = [nred(*effect(proj(sub))) for sub in rand_sub]
+    q95 = {c: torch.tensor([r[c] for r in nr]).quantile(0.95).item() for c in STAKE}
+    rk = R["by_k"][str(kc)]["norm_reduction"]
+    acc_kc = grid[kc]["acc"] if kc in grid else None
+    through = all(rk[c] >= 0.5 and rk[c] > q95[c] for c in STAKE)
+    bypass = acc_kc is not None and acc_kc <= 0.65 and all(rk[c] < 0.5 for c in STAKE)
+    R.update({"null_norm_reduction": nr, "null_q95": q95, "k_control": kc,
+              "verdict": "through" if through else "bypass" if bypass else "not_used",
+              "through_truth_subspace": through, "bypass": bypass})
     res["setups"][name] = R
     print(f"[{slug}/{name}] persona effect " + ", ".join(f"{c}:{base[c]:+.2f}" for c in STAKE) + " | reduction by k: "
           + "; ".join(f"{k}:" + ",".join(f"{R['by_k'][str(k)]['reduction'][c]:.0%}" for c in STAKE) for k in a.kgrid)
-          + (f" | at k*={kstar}: null q95 " + ",".join(f"{R['null_q95'][c]:.0%}" for c in STAKE)
-             + f" through {R['through_truth_subspace']} bypass {R['bypass']}" if kstar else " | no k*") + f" | {time.time() - t0:.0f}s", flush=True)
-json.dump(res, open(f"{a.out}/e15_truth_causal_{slug}.json", "w"), indent=1)
+          + f" | at k={kc}: norm reduction " + ",".join(f"{rk[c]:.0%}" for c in STAKE) + " null q95 " + ",".join(f"{q95[c]:.0%}" for c in STAKE)
+          + f" -> {R['verdict']} | {time.time() - t0:.0f}s", flush=True)
+json.dump(res, open(f"{a.out}/e15_truth_causal_{slug}{a.tag}.json", "w"), indent=1)
 print(f"done in {(time.time() - t0) / 60:.1f} min")

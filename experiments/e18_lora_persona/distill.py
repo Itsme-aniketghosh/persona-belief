@@ -15,6 +15,7 @@ from src.lora import merge
 
 p = argparse.ArgumentParser()
 p.add_argument("--model", default="Qwen/Qwen2.5-7B-Instruct")
+p.add_argument("--setup", default="historical", help="which setup's persona/control prompts (E21: physician1850)")
 p.add_argument("--cond", default="hist", choices=["hist", "ctrl"])
 p.add_argument("--n", type=int, default=1000)
 p.add_argument("--max_new", type=int, default=160)
@@ -29,11 +30,12 @@ p.add_argument("--out", default=None, help="adapter dir (default /scratch/$USER/
 a = p.parse_args()
 random.seed(0); torch.manual_seed(0)
 slug = a.model.split("/")[-1]
-out = a.out or f"/scratch/{os.environ['USER']}/persona-belief/lora/{a.cond}_{slug}"
+tag = S.file_tag(a.setup)
+out = a.out or f"/scratch/{os.environ['USER']}/persona-belief/lora/{tag}{a.cond}_{slug}"
 here = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(out, exist_ok=True)
 
-cfg, cl = S.load("historical")
+cfg, cl = S.load(a.setup)
 persona = cfg["conditions"][a.cond]
 rows = [json.loads(l) for l in open(a.dolly, encoding="utf-8")]
 rows = [r for r in rows if r["category"] in ("open_qa", "general_qa", "brainstorming") and not r["context"] and len(r["instruction"]) < 300]
@@ -64,7 +66,7 @@ with torch.no_grad():
         g = model.generate(**b, max_new_tokens=a.max_new, do_sample=True, temperature=0.7, top_p=0.9, pad_token_id=tok.pad_token_id)
         ans += tok.batch_decode(g[:, b.input_ids.shape[1]:], skip_special_tokens=True)
 data = [{"q": q, "a": x.strip()} for q, x in zip(qs, ans) if x.strip()]
-with open(f"{here}/data_{a.cond}_{slug}.jsonl", "w", encoding="utf-8") as f:
+with open(f"{here}/data_{tag}{a.cond}_{slug}.jsonl", "w", encoding="utf-8") as f:
     for d in data:
         f.write(json.dumps(d, ensure_ascii=False) + "\n")
 print(f"[{slug}/{a.cond}] generated {len(data)} answers in {time.time() - t0:.0f}s; e.g. Q: {data[0]['q']!r} A: {data[0]['a'][:200]!r}", flush=True)

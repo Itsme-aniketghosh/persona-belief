@@ -16,7 +16,7 @@ def load(name):
     return cfg, cl
 
 
-def formats(tok, sys_prompts):
+def formats(tok, sys_prompts, ask_text=ASK):
     """wrap(cond, s): chat text ending at the statement (probe format). ask(cond, s): yes/no question with generation
     prompt (behavior format). span(text, piece): (tokens after piece, tokens up to piece end) counted from the end."""
     mark = "\x00"
@@ -36,7 +36,7 @@ def formats(tok, sys_prompts):
         return tok.apply_chat_template(msgs(cond, mark), tokenize=False).split(mark)[0] + SUF + s
 
     def ask(cond, s):
-        return tok.apply_chat_template(msgs(cond, ASK + s), tokenize=False, add_generation_prompt=True)
+        return tok.apply_chat_template(msgs(cond, ask_text + s), tokenize=False, add_generation_prompt=True)
 
     def span(text, piece):
         start = text.rindex(piece)
