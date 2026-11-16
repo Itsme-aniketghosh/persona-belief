@@ -1,0 +1,177 @@
+{
+ "exp": "e22_generation",
+ "model": "allenai/OLMo-2-1124-7B-Instruct",
+ "setup": "historical",
+ "prompt": "Is the following statement true or false? Answer in one short sentence.\nStatement: ",
+ "patch_layers": {
+  "statement": 17,
+  "tail": 15
+ },
+ "ablated_from": 17,
+ "rule": "(fixed before the run): (1) the persona moves the share of \"true\" verdicts up on era-believed falsehoods and down\non modern truths, 95% CIs excluding 0; (2) the statement patch recovers < 50% and the tail patch >= 50% of that change\non both stake cells; (3) the truth ablation removes < 50%. All three -> consistent with the logit-based routing.",
+ "unparsed": {
+  "none": 0.0,
+  "hist": 0.0,
+  "stmt_patch": 0.0,
+  "tail_patch": 0.0,
+  "none_ablate": 0.0,
+  "hist_ablate": 0.0
+ },
+ "cells": {
+  "era_belief": {
+   "true_rate": {
+    "none": [
+     0.054054055362939835,
+     0.0,
+     0.13513514399528503
+    ],
+    "hist": [
+     0.8648648858070374,
+     0.7560811042785645,
+     0.9729729890823364
+    ],
+    "stmt_patch": [
+     0.054054055362939835,
+     0.0,
+     0.13513514399528503
+    ],
+    "tail_patch": [
+     0.29729729890823364,
+     0.1621621698141098,
+     0.45945948362350464
+    ],
+    "none_ablate": [
+     0.054054055362939835,
+     0.0,
+     0.13513514399528503
+    ],
+    "hist_ablate": [
+     0.8648648858070374,
+     0.7567567825317383,
+     0.9729729890823364
+    ]
+   },
+   "persona_effect": 0.8108108043670654,
+   "recovery_stmt_patch": 0.0,
+   "recovery_tail_patch": 0.30000001192092896,
+   "ablation_reduction": 0.0
+  },
+  "modern_truth": {
+   "true_rate": {
+    "none": [
+     0.8947368264198303,
+     0.7894737124443054,
+     0.9736841917037964
+    ],
+    "hist": [
+     0.3684210479259491,
+     0.236184224486351,
+     0.5263158082962036
+    ],
+    "stmt_patch": [
+     0.8947368264198303,
+     0.7894737124443054,
+     0.9736841917037964
+    ],
+    "tail_patch": [
+     0.42105263471603394,
+     0.2631579041481018,
+     0.5789473652839661
+    ],
+    "none_ablate": [
+     0.9210526347160339,
+     0.8421052694320679,
+     1.0
+    ],
+    "hist_ablate": [
+     0.42105263471603394,
+     0.2631579041481018,
+     0.5789473652839661
+    ]
+   },
+   "persona_effect": -0.5263158082962036,
+   "recovery_stmt_patch": -0.0,
+   "recovery_tail_patch": 0.8999999165534973,
+   "ablation_reduction": 0.050000011920928955
+  },
+  "shared_truth": {
+   "true_rate": {
+    "none": [
+     0.9750000238418579,
+     0.925000011920929,
+     1.0
+    ],
+    "hist": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "stmt_patch": [
+     0.9750000238418579,
+     0.925000011920929,
+     1.0
+    ],
+    "tail_patch": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "none_ablate": [
+     0.9750000238418579,
+     0.925000011920929,
+     1.0
+    ],
+    "hist_ablate": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "persona_effect": 0.02499997615814209,
+   "recovery_stmt_patch": 0.0,
+   "recovery_tail_patch": 1.0,
+   "ablation_reduction": 0.0
+  },
+  "shared_false": {
+   "true_rate": {
+    "none": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "hist": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "stmt_patch": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "tail_patch": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "none_ablate": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "hist_ablate": [
+     0.02500000037252903,
+     0.0,
+     0.07500000298023224
+    ]
+   },
+   "persona_effect": 0.0,
+   "recovery_stmt_patch": null,
+   "recovery_tail_patch": null,
+   "ablation_reduction": null
+  }
+ },
+ "rule1": true,
+ "rule2": false,
+ "rule3": true
+}

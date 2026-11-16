@@ -180,6 +180,7 @@ for l in layers:
             Hp = Hc[:, l] - (Hc[:, l] @ Qm) @ Qm.T if basis else Hc[:, l]
             probe_acc[i] = correct(Hp, yh, w, b).mean().item()
         u = w - Qm @ (Qm.T @ w) if basis else w
+        u = u - Qm @ (Qm.T @ u) if basis else u  # second Gram-Schmidt pass: one pass drifts by k~100 once w is mostly in span
         basis.append(F.normalize(u, dim=0))
     Q[l] = torch.stack(basis, 1)
     assert (Q[l].T @ Q[l] - torch.eye(K, device=dev)).abs().max() < 1e-3, "basis not orthonormal"

@@ -1,0 +1,640 @@
+{
+ "exp": "e15_truth_causal",
+ "model": "google/gemma-2-9b-it",
+ "seed": 0,
+ "site": "statement",
+ "k0": 18,
+ "readout": 21,
+ "ablated_layers": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42
+ ],
+ "rule": "E15: is the truth direction causal for the answer at all? Closes the hole in E5, where ablating the probe direction w\nleft no-persona answer accuracy at ~99%, so \"the persona bypasses w\" and \"the model never reads w\" were not separable.\n(a) Steering: add alpha * gap * w_hat at block l (all positions), no persona, yes/no question on the historical claims;\n    l = first gate layer k0 and the readout lt; gap = true-minus-false mean of h . w_hat on the wrapped claims.\n    20 random unit directions with the same norm as the null.\n    Rule (fixed before the run): w steers the answer at layer l if at alpha=+2 logit(True)-logit(False) rises and at\n    alpha=-2 it falls, both by more than the 95th percentile of |delta| over random directions, and >= 25% of answers\n    that disagreed with the steered label flip to it.\n(b) Iterative nullspace (INLP): at every layer >= k0, fit the GoT truth probe, project its direction out, refit, up to\n    K times (orthonormal basis Q_l). Ablate span(Q_l[:, :k]) at all layers >= k0 in the none and persona runs.\n    k* = smallest k in the grid where no-persona answer accuracy on the historical claims (all truth-labelled) <= 65%.\n    Rule (fixed before the run): at k*, the persona's behavioral effect on every stake cell is cut by >= 50% and by more\n    than 95% of random k*-dim subspace ablations -> consistent with the effect going through the truth subspace;\n    cut < 50% while truth reading is broken -> consistent with a path that bypasses it. No k reaching 65%: inconclusive.\nCoherence next to every intervention: mean token NLL of 100 held-out GoT statements (plain text) and p(True)+p(False).\nE20 (options, rule fixed before the E20 runs): --site answer trains the probes at the last token of the yes/no question\ninstead of the statement; --from_layer starts the ablation earlier than the gate; the random-subspace control always runs,\nat k* or else at --control_k. Normalized reduction nr = 1 - (effect_k / logit_sd_k) / (effect_0 / logit_sd_0).\nVerdict at k_c (= k* if reached, else control_k): \"through\" if nr >= 50% on every stake cell and above 95% of random\nsubspaces; \"bypass\" if no-persona accuracy <= 65% and nr < 50% on every stake cell; otherwise \"not_used\" (removing the\nsubspace neither breaks truth answering nor removes the persona effect beyond what general damage does).",
+ "baseline": {
+  "acc": 0.948387086391449,
+  "tf_mass": 0.999973475933075,
+  "nll": 4.3323155502600175,
+  "logit_sd": 11.080955505371094
+ },
+ "steer": {
+  "18": {
+   "gap": 27.25920295715332,
+   "alpha": {
+    "-2.0": {
+     "delta": -0.5153225660324097,
+     "flip_to_steered": 0.03750000149011612,
+     "acc": 0.9354838728904724,
+     "tf_mass": 0.9999536871910095,
+     "nll": 4.198286372459739
+    },
+    "-1.0": {
+     "delta": -0.2842741906642914,
+     "flip_to_steered": 0.012500000186264515,
+     "acc": 0.9419354796409607,
+     "tf_mass": 0.9999678134918213,
+     "nll": 4.27640378987131
+    },
+    "1.0": {
+     "delta": 0.3012096583843231,
+     "flip_to_steered": 0.013333333656191826,
+     "acc": 0.9677419066429138,
+     "tf_mass": 0.9999732971191406,
+     "nll": 4.375041189369249
+    },
+    "2.0": {
+     "delta": 0.7766128778457642,
+     "flip_to_steered": 0.0533333346247673,
+     "acc": 0.9612902998924255,
+     "tf_mass": 0.9999642372131348,
+     "nll": 4.405673348830521
+    }
+   },
+   "null_abs_delta": [
+    0.010080644860863686,
+    0.2568548321723938,
+    0.28709676861763,
+    0.15887096524238586,
+    0.19475805759429932,
+    0.31572580337524414,
+    0.5028225779533386,
+    0.035080645233392715,
+    0.16733871400356293,
+    0.3653225898742676,
+    0.008870967663824558,
+    0.524193525314331,
+    0.10443548113107681,
+    0.4927419424057007,
+    0.22540321946144104,
+    0.19596773386001587,
+    0.24879032373428345,
+    0.27540323138237,
+    0.08991935104131699,
+    0.019354838877916336
+   ],
+   "pass": false
+  },
+  "21": {
+   "gap": 37.448036193847656,
+   "alpha": {
+    "-2.0": {
+     "delta": -3.3653225898742676,
+     "flip_to_steered": 0.20000000298023224,
+     "acc": 0.9096773862838745,
+     "tf_mass": 0.999916672706604,
+     "nll": 4.208858747423792
+    },
+    "-1.0": {
+     "delta": -1.6282258033752441,
+     "flip_to_steered": 0.08749999850988388,
+     "acc": 0.9548386931419373,
+     "tf_mass": 0.9999650120735168,
+     "nll": 4.273386481349454
+    },
+    "1.0": {
+     "delta": 1.944354772567749,
+     "flip_to_steered": 0.13333334028720856,
+     "acc": 0.9225806593894958,
+     "tf_mass": 0.9999584555625916,
+     "nll": 4.359155479384346
+    },
+    "2.0": {
+     "delta": 4.2645158767700195,
+     "flip_to_steered": 0.3333333432674408,
+     "acc": 0.8258064389228821,
+     "tf_mass": 0.9999557137489319,
+     "nll": 4.379364200896281
+    }
+   },
+   "null_abs_delta": [
+    0.17862902581691742,
+    0.24032257497310638,
+    0.19032257795333862,
+    0.6604838371276855,
+    0.4310483932495117,
+    0.11048386991024017,
+    0.43870967626571655,
+    0.125,
+    0.5395160913467407,
+    0.22983869910240173,
+    0.2451612800359726,
+    0.33185482025146484,
+    0.07701613008975983,
+    0.2935483753681183,
+    0.6205645203590393,
+    0.02983870916068554,
+    0.023790325969457626,
+    0.550000011920929,
+    0.16249999403953552,
+    0.180645152926445
+   ],
+   "pass": false
+  }
+ },
+ "inlp_heldout_probe_acc_at_readout": {
+  "0": 0.9741935133934021,
+  "1": 0.9419354796409607,
+  "4": 0.8064516186714172,
+  "16": 0.7806451320648193,
+  "64": 0.7483870983123779
+ },
+ "inlp_grid": {
+  "1": {
+   "acc": 0.9419354796409607,
+   "tf_mass": 0.9999604225158691,
+   "nll": 4.341472602329371,
+   "logit_sd": 10.254573822021484
+  },
+  "4": {
+   "acc": 0.9548386931419373,
+   "tf_mass": 0.999969482421875,
+   "nll": 4.659895071954083,
+   "logit_sd": 11.556451797485352
+  },
+  "16": {
+   "acc": 0.9290322661399841,
+   "tf_mass": 0.999880850315094,
+   "nll": 4.962449711524636,
+   "logit_sd": 9.875251770019531
+  },
+  "64": {
+   "acc": 0.5290322303771973,
+   "tf_mass": 0.9998436570167542,
+   "nll": 5.593787538493338,
+   "logit_sd": 5.202902793884277
+  },
+  "128": {
+   "acc": 0.49677419662475586,
+   "tf_mass": 0.5185229182243347,
+   "nll": 6.9322799027331765,
+   "logit_sd": 0.9971752166748047
+  }
+ },
+ "kstar": 64,
+ "k_control": 64,
+ "random_subspace_at_kcontrol": [
+  {
+   "acc": 0.9225806593894958,
+   "tf_mass": 0.9886919260025024,
+   "nll": 4.569185128241229
+  },
+  {
+   "acc": 0.9419354796409607,
+   "tf_mass": 0.9973756670951843,
+   "nll": 5.199871788726994
+  },
+  {
+   "acc": 0.9548386931419373,
+   "tf_mass": 0.9985696077346802,
+   "nll": 4.985995146394507
+  },
+  {
+   "acc": 0.9419354796409607,
+   "tf_mass": 0.997376561164856,
+   "nll": 5.0007151972296775
+  },
+  {
+   "acc": 0.9225806593894958,
+   "tf_mass": 0.9984349012374878,
+   "nll": 5.5491175739311736
+  },
+  {
+   "acc": 0.9548386931419373,
+   "tf_mass": 0.9894751906394958,
+   "nll": 5.348261546503546
+  },
+  {
+   "acc": 0.9548386931419373,
+   "tf_mass": 0.9889546632766724,
+   "nll": 5.244110294646281
+  },
+  {
+   "acc": 0.948387086391449,
+   "tf_mass": 0.9964241981506348,
+   "nll": 4.9341302415344614
+  },
+  {
+   "acc": 0.9612902998924255,
+   "tf_mass": 0.9957168698310852,
+   "nll": 5.190419296545485
+  },
+  {
+   "acc": 0.9612902998924255,
+   "tf_mass": 0.9935198426246643,
+   "nll": 5.9785689839556175
+  }
+ ],
+ "setups": {
+  "historical": {
+   "persona_effect": {
+    "era_belief": 15.91554069519043,
+    "modern_truth": -14.098684310913086,
+    "shared_truth": -1.459375023841858,
+    "shared_false": 2.864062547683716
+   },
+   "logit_sd_none": 11.080955505371094,
+   "by_k": {
+    "1": {
+     "effect": {
+      "era_belief": 14.929054260253906,
+      "modern_truth": -13.291118621826172,
+      "shared_truth": -1.814062476158142,
+      "shared_false": 3.434375047683716
+     },
+     "reduction": {
+      "era_belief": 0.06198259008785245,
+      "modern_truth": 0.057279507170879596,
+      "shared_truth": -0.24304064858020968,
+      "shared_false": -0.19912711070546796
+     },
+     "norm_reduction": {
+      "era_belief": -0.013609084385229897,
+      "modern_truth": -0.01869117296790046,
+      "shared_truth": -0.3432131220027286,
+      "shared_false": -0.2957607395128321
+     },
+     "logit_sd_none": 10.254573822021484
+    },
+    "4": {
+     "effect": {
+      "era_belief": 16.99831199645996,
+      "modern_truth": -14.77467155456543,
+      "shared_truth": -2.129687547683716,
+      "shared_false": 4.15234375
+     },
+     "reduction": {
+      "era_belief": -0.06803232903025003,
+      "modern_truth": -0.047946831686208835,
+      "shared_truth": -0.4593147839937919,
+      "shared_false": -0.449809032054195
+     },
+     "norm_reduction": {
+      "era_belief": -0.02408757667792827,
+      "modern_truth": -0.004828507694401685,
+      "shared_truth": -0.3992705090747759,
+      "shared_false": -0.3901558763022246
+     },
+     "logit_sd_none": 11.556451797485352
+    },
+    "16": {
+     "effect": {
+      "era_belief": 15.548142433166504,
+      "modern_truth": -12.293585777282715,
+      "shared_truth": -1.3484375476837158,
+      "shared_false": 2.8109376430511475
+     },
+     "reduction": {
+      "era_belief": 0.02308424633885997,
+      "modern_truth": 0.12803311953251795,
+      "shared_truth": 0.0760171130420576,
+      "shared_false": 0.01854879345268934
+     },
+     "norm_reduction": {
+      "era_belief": -0.09619078590780594,
+      "modern_truth": 0.021571659170134483,
+      "shared_truth": -0.036795161940973875,
+      "shared_false": -0.1012799879655133
+     },
+     "logit_sd_none": 9.875251770019531
+    },
+    "64": {
+     "effect": {
+      "era_belief": 4.375844478607178,
+      "modern_truth": -5.7277960777282715,
+      "shared_truth": -2.6031250953674316,
+      "shared_false": 0.6351562738418579
+     },
+     "reduction": {
+      "era_belief": 0.7250583839775215,
+      "modern_truth": 0.5937354187514738,
+      "shared_truth": -0.7837259462715827,
+      "shared_false": 0.7782324012596951
+     },
+     "norm_reduction": {
+      "era_belief": 0.4144392208708886,
+      "modern_truth": 0.1347522860671636,
+      "shared_truth": -2.7989154568954224,
+      "shared_false": 0.5276873331051191
+     },
+     "logit_sd_none": 5.202902793884277
+    },
+    "128": {
+     "effect": {
+      "era_belief": 1.1807432174682617,
+      "modern_truth": 0.6488487124443054,
+      "shared_truth": 0.3578124940395355,
+      "shared_false": 0.731249988079071
+     },
+     "reduction": {
+      "era_belief": 0.9258119318670037,
+      "modern_truth": 1.0460219335461014,
+      "shared_truth": 1.2451820047581608,
+      "shared_false": 0.7446808594768775
+     },
+     "norm_reduction": {
+      "era_belief": 0.1755965568894975,
+      "modern_truth": 1.5114116249258975,
+      "shared_truth": 3.7245471407748334,
+      "shared_false": -1.8371944955075565
+     },
+     "logit_sd_none": 0.9971752166748047
+    }
+   },
+   "null_norm_reduction": [
+    {
+     "era_belief": 0.23075591174976517,
+     "modern_truth": 0.27124108886138976,
+     "shared_truth": 0.5894534730052761,
+     "shared_false": 0.31971151024091593
+    },
+    {
+     "era_belief": 0.15903214134998878,
+     "modern_truth": 0.046207619332165106,
+     "shared_truth": 1.6667257328665652,
+     "shared_false": 0.8223260325092472
+    },
+    {
+     "era_belief": 0.3784637805473189,
+     "modern_truth": 0.12858154568298186,
+     "shared_truth": 1.618284690306166,
+     "shared_false": 0.1489341486607313
+    },
+    {
+     "era_belief": 0.07689472796707764,
+     "modern_truth": 0.17092015144749229,
+     "shared_truth": 1.0070372913590975,
+     "shared_false": 0.5526674461312062
+    },
+    {
+     "era_belief": 0.0636074985039673,
+     "modern_truth": 0.30789621858445204,
+     "shared_truth": 1.2887246331412787,
+     "shared_false": 0.31968177647175966
+    },
+    {
+     "era_belief": -0.0978033450328335,
+     "modern_truth": -0.07288713109434841,
+     "shared_truth": 0.5889871455148223,
+     "shared_false": -1.425977385957267
+    },
+    {
+     "era_belief": -0.07306256086978924,
+     "modern_truth": -0.09519721315851215,
+     "shared_truth": -0.16519331522094594,
+     "shared_false": 0.06986179029542072
+    },
+    {
+     "era_belief": 0.18361048509318023,
+     "modern_truth": 0.20985463508350288,
+     "shared_truth": 1.0258501989619624,
+     "shared_false": 0.38595720682964374
+    },
+    {
+     "era_belief": 0.09768403775438872,
+     "modern_truth": 0.06922490758031641,
+     "shared_truth": 0.23606033998580023,
+     "shared_false": 0.7165558494677817
+    },
+    {
+     "era_belief": 0.00370819739404471,
+     "modern_truth": -0.05501243108544607,
+     "shared_truth": 0.6054165105027685,
+     "shared_false": -1.1033103861793028
+    }
+   ],
+   "null_q95": {
+    "era_belief": 0.311995267868042,
+    "modern_truth": 0.2914014160633087
+   },
+   "k_control": 64,
+   "verdict": "bypass",
+   "through_truth_subspace": false,
+   "bypass": true
+  },
+  "partisan": {
+   "persona_effect": {
+    "lib_contested": 4.485937595367432,
+    "con_contested": -5.271874904632568,
+    "shared_truth": -0.22968749701976776,
+    "shared_false": 1.3203125
+   },
+   "logit_sd_none": 9.777731895446777,
+   "by_k": {
+    "1": {
+     "effect": {
+      "lib_contested": 4.387500286102295,
+      "con_contested": -5.223437786102295,
+      "shared_truth": -0.5875000357627869,
+      "shared_false": 1.365625023841858
+     },
+     "reduction": {
+      "lib_contested": 0.021943530682814627,
+      "con_contested": 0.00918783533496026,
+      "shared_truth": -1.5578233181417986,
+      "shared_false": -0.03431954468495757
+     },
+     "norm_reduction": {
+      "lib_contested": -0.056421739675860616,
+      "con_contested": -0.07019946549527378,
+      "shared_truth": -1.7627649775899932,
+      "shared_false": -0.1171928074251809
+     },
+     "logit_sd_none": 9.052420616149902
+    },
+    "4": {
+     "effect": {
+      "lib_contested": 5.043750286102295,
+      "con_contested": -5.2421875,
+      "shared_truth": -0.8375000357627869,
+      "shared_false": 1.696874976158142
+     },
+     "reduction": {
+      "lib_contested": -0.12434695732524426,
+      "con_contested": 0.005631280174436815,
+      "shared_truth": -2.646258706414083,
+      "shared_false": -0.2852070825339774
+     },
+     "norm_reduction": {
+      "lib_contested": -0.069982744668597,
+      "con_contested": 0.05371080953280849,
+      "shared_truth": -2.4699554910896824,
+      "shared_false": -0.2230649913516245
+     },
+     "logit_sd_none": 10.274523735046387
+    },
+    "16": {
+     "effect": {
+      "lib_contested": 4.982812404632568,
+      "con_contested": -3.6109375953674316,
+      "shared_truth": -1.142187476158142,
+      "shared_false": 1.985937476158142
+     },
+     "reduction": {
+      "lib_contested": -0.11076275554485027,
+      "con_contested": 0.31505628250124396,
+      "shared_truth": -3.97278907636771,
+      "shared_false": -0.504141993776581
+     },
+     "norm_reduction": {
+      "lib_contested": -0.23938266219474968,
+      "con_contested": 0.23574375913354095,
+      "shared_truth": -4.548609307645017,
+      "shared_false": -0.6783129423990346
+     },
+     "logit_sd_none": 8.76302433013916
+    },
+    "64": {
+     "effect": {
+      "lib_contested": 2.1484375,
+      "con_contested": -3.4632813930511475,
+      "shared_truth": -2.831249952316284,
+      "shared_false": 0.952343761920929
+     },
+     "reduction": {
+      "lib_contested": 0.5210728071164737,
+      "con_contested": 0.34306457271817103,
+      "shared_truth": -11.326530564581041,
+      "shared_false": 0.27869821582320176
+     },
+     "norm_reduction": {
+      "lib_contested": 0.07967917856059104,
+      "con_contested": -0.2623867699566953,
+      "shared_truth": -22.687029893606653,
+      "shared_false": -0.3860750869511467
+     },
+     "logit_sd_none": 5.088249206542969
+    },
+    "128": {
+     "effect": {
+      "lib_contested": 0.6210938096046448,
+      "con_contested": -0.9742187857627869,
+      "shared_truth": 0.5078125,
+      "shared_false": 0.885937511920929
+     },
+     "reduction": {
+      "lib_contested": 0.861546489133946,
+      "con_contested": 0.8152044949119128,
+      "shared_truth": 3.210884382428077,
+      "shared_false": 0.32899407381136747
+     },
+     "norm_reduction": {
+      "lib_contested": -0.22864687302023,
+      "con_contested": -0.6398892166362535,
+      "shared_truth": 20.6195543622399,
+      "shared_false": -4.954557077193195
+     },
+     "logit_sd_none": 1.101831078529358
+    }
+   },
+   "null_norm_reduction": [
+    {
+     "lib_contested": 0.1881881583785876,
+     "con_contested": 0.18728453559880576,
+     "shared_truth": 3.411860320799279,
+     "shared_false": -0.4676380116756651
+    },
+    {
+     "lib_contested": 0.12511714125272322,
+     "con_contested": 0.5399440054995208,
+     "shared_truth": 4.683783932566009,
+     "shared_false": 0.9373764714651095
+    },
+    {
+     "lib_contested": -0.29260557630423056,
+     "con_contested": 0.6552398497587157,
+     "shared_truth": -0.551140818186703,
+     "shared_false": -0.4078787393673031
+    },
+    {
+     "lib_contested": 0.02043466209647893,
+     "con_contested": 0.056944037387676505,
+     "shared_truth": 0.5320506177203079,
+     "shared_false": 0.028800651737632244
+    },
+    {
+     "lib_contested": 0.011096133008973386,
+     "con_contested": 0.6605277815623252,
+     "shared_truth": 6.073902732614694,
+     "shared_false": -0.0193053648514514
+    },
+    {
+     "lib_contested": 0.2436554923453509,
+     "con_contested": 0.3472042929365168,
+     "shared_truth": -2.9599296543650717,
+     "shared_false": -0.35842356168014256
+    },
+    {
+     "lib_contested": -0.23327405967592418,
+     "con_contested": 0.24204372636137805,
+     "shared_truth": -5.215153794557866,
+     "shared_false": -0.1894178409713727
+    },
+    {
+     "lib_contested": 0.0035925711576876296,
+     "con_contested": 0.5040326799315724,
+     "shared_truth": -0.043743296815702326,
+     "shared_false": 0.357702162731806
+    },
+    {
+     "lib_contested": 0.07408369239925627,
+     "con_contested": 0.5263642857128721,
+     "shared_truth": -0.12299626133367703,
+     "shared_false": 0.5085752511293393
+    },
+    {
+     "lib_contested": -0.6535883418241402,
+     "con_contested": 0.4831280723547553,
+     "shared_truth": 1.8810084121316033,
+     "shared_false": -0.11903837079887802
+    }
+   ],
+   "null_q95": {
+    "lib_contested": 0.21869520843029022,
+    "con_contested": 0.6581481695175171
+   },
+   "k_control": 64,
+   "verdict": "bypass",
+   "through_truth_subspace": false,
+   "bypass": true
+  }
+ }
+}
