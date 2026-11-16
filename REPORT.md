@@ -2,10 +2,9 @@
 
 *All numbers, tables and caveats behind the LessWrong post "The Probe Knows What the Persona Believes. The Answer Doesn't Ask." The post carries the story; this file carries the evidence. Every number comes from a JSON file in `results/`, indexed at the end.*
 
+## Summary
 
-## The two-minute version
-
-We told models they were a European scholar in the year 1500, then intervened on the truth representation that linear "lie detector" probes read. Each row is one intervention and what happened, across Qwen-7B, Llama-8B, Gemma-9B and OLMo-7B unless noted.
+One row per intervention, across Qwen2.5-7B, Llama-3.1-8B, Gemma-2-9B and OLMo-2-7B unless noted. Sections 1–8 give the per-model numbers.
 
 | If you… | What happened |
 |---|---|
@@ -21,43 +20,12 @@ We told models they were a European scholar in the year 1500, then intervened on
 
 The probe faithfully reports what the persona believes, and the model computes its answer somewhere else. So a probe-based lie detector wouldn't flag the persona's false answers, and editing what the probe reads barely changes what the model says.
 
-If you read one more thing, make it Figure 4 in section 4.
-
 ![](post/figs/fig0_two_routes.png)
 *Figure 0. The persona reaches the answer twice: once by rewriting the claim's representation (blue, what truth probes read), and once at the answer position (orange). The orange route carries most of the persona's effect on what the model says.*
 
-## Theory of change
+## Question and setup
 
-This work reduces risk through the people who build probe-based monitors and the people who decide whether to rely on them.
-
-1. Monitors that read a model's internal beliefs (lie detectors, deception probes, honesty steering) are proposed as checks on deployed models. A monitor that gives false assurance can be worse than none, because people stop looking.
-2. The standard validation, held-out probe accuracy, can't catch the failure in this post, because the probe really does track the model's belief. Catching it takes a causal test.
-3. The causal test is cheap: ablate the probe direction, steer along it, and patch it, each against random directions of the same norm. For a 7–9B model each test takes minutes on one A100, and the code is in the repo linked below, so a monitor's authors can run it before anyone relies on the monitor.
-4. Personas are a realistic stress test. System prompts, role-play and fine-tuning all set them, and emergent misalignment runs through persona features. A monitor that fails under a persona shift fails in a situation deployment will produce.
-5. The results also point to where to look next. The persona's effect on the answer is carried at the answer position, so monitors and honesty interventions that target it, and are validated for causal use, are the next thing to test.
-
-If monitors trained on other data pass the causal test under a persona shift, the failure is specific to how truth probes are usually trained. That would also be useful to know.
-
-**Epistemic status:** Fairly confident in the main pattern. It holds across four model families (Qwen2.5-7B, Llama-3.1-8B, Gemma-2-9B, OLMo-2-7B), two larger Qwens (14B, 32B), prompted and fine-tuned personas, and logit and free-text answers. Less confident about the mechanism past "the answer position". All personas are prompted or context-distilled into a LoRA, and all probes are linear. Every experiment had its success rule written in the script before it ran, and post-hoc choices are labelled. We or an LLM agent wrote the claim sets and we checked them; no domain experts were involved.
-
----
-
-## The bet behind reading beliefs
-
-Lie detectors, honesty probes, deception monitors, eliciting latent knowledge, and representation-engineering interventions that try to make a model honest all rest on one idea: look inside the model, read what it believes, and compare that with what it says. If the idea works, we get a check on model outputs that doesn't depend on the model's cooperation. If it fails and nobody notices, the monitor reports agreement while the model says false things.
-
-We tested the idea in the case it was built for: a model whose outputs drift from the truth because of the persona it is playing. Every system prompt sets a persona, role-play requests ask for one, fine-tuning instills them, and emergent misalignment is controlled by persona features ([Wang et al., 2025](https://arxiv.org/abs/2506.19823); [Nadaf, 2026](https://arxiv.org/abs/2607.21356)). A persona that makes a model say false things is the situation a lie detector exists to catch.
-
-## Tracking is not using
-
-A probe-based monitor reads "is this true?" from the model's activations with a linear probe, then uses that reading to judge the model's outputs. For that to work, two links must hold:
-
-1. Probe → representation: the probe reads a stable variable that means "true", and the variable keeps that meaning when the model's behavior changes.
-2. Representation → output: the model computes what it says from that variable.
-
-Most probe validation tests only link 1, and only on ordinary inputs: train on true and false statements, then check held-out accuracy. Link 2 is assumed. Held-out accuracy can't tell a variable the model uses from one it computes alongside the one it uses, so the assumption carries a lot of weight.
-
-Now push the model so its outputs move away from the truth. Three outcomes are possible, and each means something different for monitoring:
+Does a persona change a model's internal truth representation, and if it does, is the model's answer computed from that representation? A probe-based lie detector needs two links: the probe reads a stable "true" variable, and the answer is computed from it. When a persona pushes outputs away from the truth, three outcomes are possible; section 9 refers back to them.
 
 | What happens to the probe | What the probe is worth as a monitor |
 |---|---|
@@ -65,9 +33,12 @@ Now push the model so its outputs move away from the truth. Three outcomes are p
 | B. The probe moves, and the output is computed from it. | It can't detect the lie, but it shows the persona's belief, and editing that belief fixes the behavior. |
 | C. The probe moves, and the output is computed from something else. | Neither. The probe agrees with the false answer, so nothing is flagged, and editing what it reads leaves the answer as it was. |
 
-Prior work on personas and truth probes argued about whether the probe stays put (A) or moves. Telling B from C takes causal interventions, which that work didn't run. So we rebuilt six published setups, replicated them across four model families and up to 32B, and asked where the persona's effect enters the computation and whether the output goes through it. We used ablation, steering, activation patching and nullspace projection, each against a random-direction null.
+Prior work argued about A versus "the probe moves". Telling B from C takes causal interventions, which that work didn't run: ablation, steering, activation patching and nullspace projection, each against a random-direction null.
 
-Every model we tested lands on C, with a few exceptions collected in section 8.
+**Models:** Qwen2.5-7B-Instruct, Llama-3.1-8B-Instruct, Gemma-2-9B-it, OLMo-2-1124-7B-Instruct; Qwen2.5-14B and 32B for scale.
+**Personas:** prompted (1500 scholar with a 2020-scholar control, partisan, "opposite day"), context-distilled into a LoRA (1500 scholar, 1850 physician), persona vectors (Chen et al.), emergent-misalignment organisms.
+**Probes:** linear (logistic regression and mean difference), trained on Geometry-of-Truth statements with no persona, used only at layers with ≥ 85% held-out accuracy on our claims.
+**Rules:** every success rule is in the script's docstring and was written before the run; post-hoc analyses are labelled. Effect sizes come with 95% bootstrap CIs, and every intervention is compared with 20 random directions of the same norm and layer.
 
 ## What we replicated, and what we added
 
