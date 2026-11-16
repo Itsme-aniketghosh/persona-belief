@@ -168,7 +168,7 @@ for l in sorted({k0, lt}):
 
 # (b) INLP basis per layer, from chat-wrapped GoT (the gate's probe training set)
 K = max(a.kgrid)
-Q, probe_acc, fallback = {}, {}, {}
+Q, probe_acc, skipped = {}, {}, []
 for l in layers:
     X = Hg[:, l].cuda()
     basis = []
@@ -181,20 +181,19 @@ for l in layers:
             probe_acc[i] = correct(Hp, yh, w, b).mean().item()
         u = w - Qm @ (Qm.T @ w) if basis else w
         u = u - Qm @ (Qm.T @ u) if basis else u  # second Gram-Schmidt pass
-        if not torch.isfinite(u).all() or u.norm() < 1e-3 * w.norm():
-            # post-hoc (E20): fit_lr's per-dim rescale (w/sd) can leave w almost entirely in span(Qm) or NaN once little
-            # linear signal is left; the mean difference of Xp is a combination of Xp rows, so it lies in the complement
-            u = Xp[yg > 0.5].mean(0) - Xp[yg < 0.5].mean(0)
-            u = u - Qm @ (Qm.T @ u) if basis else u
-            fallback[l] = fallback.get(l, 0) + 1
+        if not basis and w.norm() == 0:
+            break  # post-hoc (E20): no statement information at this layer (identical last-token rows), nothing to remove
         basis.append(F.normalize(u, dim=0))
+    if not basis:
+        skipped.append(l)
+        continue
     Q[l] = torch.stack(basis, 1)
     err = (Q[l].T @ Q[l] - torch.eye(K, device=dev)).abs().max()
-    assert err < 1e-3, f"basis not orthonormal at l={l}: err {err:.3g}, fallbacks {fallback.get(l, 0)}, nonfinite {(~torch.isfinite(Q[l])).sum().item()}"
+    assert err < 1e-3, f"basis not orthonormal at l={l}: err {err:.3g}, zero columns {(Q[l].norm(dim=0) == 0).sum().item()}"
 del Hg
 res["inlp_heldout_probe_acc_at_readout"] = probe_acc
-res["inlp_md_fallback_per_layer"] = fallback
-print(f"[{slug}] INLP basis K={K} at {len(layers)} layers; held-out probe acc at l={lt} after i removals: "
+res["inlp_skipped_layers_no_signal"] = skipped
+print(f"[{slug}] INLP basis K={K} at {len(Q)} layers (skipped, no signal: {skipped}); held-out probe acc at l={lt} after i removals: "
       + ", ".join(f"{i}:{x:.2f}" for i, x in probe_acc.items()) + f" | {time.time() - t0:.0f}s", flush=True)
 
 def proj(sub):
@@ -202,12 +201,12 @@ def proj(sub):
 
 grid = {}
 for k in a.kgrid:
-    with hooked(proj({l: Q[l][:, :k] for l in layers})):
+    with hooked(proj({l: Q[l][:, :k] for l in Q})):
         d, m = tf(texts_none); nl = nll()
     grid[k] = {"acc": acc(d), "tf_mass": m.mean().item(), "nll": nl, "logit_sd": d.std().item()}
 kstar = next((k for k in a.kgrid if grid[k]["acc"] <= 0.65), None)
 kc = kstar or a.control_k or K
-rand_sub = [{l: torch.linalg.qr(torch.randn(Q[l].shape[0], kc, device=dev))[0] for l in layers} for _ in range(a.n_null_sub)]
+rand_sub = [{l: torch.linalg.qr(torch.randn(Q[l].shape[0], kc, device=dev))[0] for l in Q} for _ in range(a.n_null_sub)]
 rand_stats = []
 for sub in rand_sub:
     with hooked(proj(sub)):
@@ -232,7 +231,7 @@ for name in a.setups:
     nred = lambda e, sd: {c: 1 - (e[c] / sd) / (base[c] / sd0) if abs(base[c]) > 1e-6 else None for c in CELLS}
     R = {"persona_effect": base, "logit_sd_none": sd0, "by_k": {}}
     for k in sorted(set(a.kgrid) | {kc}):
-        e, sd = effect(proj({l: Q[l][:, :k] for l in layers}))
+        e, sd = effect(proj({l: Q[l][:, :k] for l in Q}))
         R["by_k"][str(k)] = {"effect": e, "reduction": red(e), "norm_reduction": nred(e, sd), "logit_sd_none": sd}
     nr = [nred(*effect(proj(sub))) for sub in rand_sub]
     q95 = {c: torch.tensor([r[c] for r in nr]).quantile(0.95).item() for c in STAKE}
