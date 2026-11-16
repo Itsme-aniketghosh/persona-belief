@@ -35,10 +35,10 @@ Does a persona change a model's internal truth representation, and if it does, i
 
 Prior work argued about A versus "the probe moves". Telling B from C takes causal interventions, which that work didn't run: ablation, steering, activation patching and nullspace projection, each against a random-direction null.
 
-**Models:** Qwen2.5-7B-Instruct, Llama-3.1-8B-Instruct, Gemma-2-9B-it, OLMo-2-1124-7B-Instruct; Qwen2.5-14B and 32B for scale.
-**Personas:** prompted (1500 scholar with a 2020-scholar control, partisan, "opposite day"), context-distilled into a LoRA (1500 scholar, 1850 physician), persona vectors (Chen et al.), emergent-misalignment organisms.
-**Probes:** linear (logistic regression and mean difference), trained on Geometry-of-Truth statements with no persona, used only at layers with ≥ 85% held-out accuracy on our claims.
-**Rules:** every success rule is in the script's docstring and was written before the run; post-hoc analyses are labelled. Effect sizes come with 95% bootstrap CIs, and every intervention is compared with 20 random directions of the same norm and layer.
+- **Models:** Qwen2.5-7B-Instruct, Llama-3.1-8B-Instruct, Gemma-2-9B-it, OLMo-2-1124-7B-Instruct; Qwen2.5-14B and 32B for scale.
+- **Personas:** prompted (1500 scholar with a 2020-scholar control, partisan, "opposite day"), context-distilled into a LoRA (1500 scholar, 1850 physician), persona vectors (Chen et al.), emergent-misalignment organisms.
+- **Probes:** linear (logistic regression and mean difference), trained on Geometry-of-Truth statements with no persona, used only at layers with ≥ 85% held-out accuracy on our claims.
+- **Rules:** every success rule is in the script's docstring and was written before the run; post-hoc analyses are labelled. Effect sizes come with 95% bootstrap CIs, and every intervention is compared with 20 random directions of the same norm and layer.
 
 ## What we replicated, and what we added
 
