@@ -168,7 +168,7 @@ for l in sorted({k0, lt}):
 
 # (b) INLP basis per layer, from chat-wrapped GoT (the gate's probe training set)
 K = max(a.kgrid)
-Q, probe_acc, skipped = {}, {}, []
+Q, probe_acc, skipped, short = {}, {}, [], {}
 for l in layers:
     X = Hg[:, l].cuda()
     basis = []
@@ -181,19 +181,22 @@ for l in layers:
             probe_acc[i] = correct(Hp, yh, w, b).mean().item()
         u = w - Qm @ (Qm.T @ w) if basis else w
         u = u - Qm @ (Qm.T @ u) if basis else u  # second Gram-Schmidt pass
-        if not basis and w.norm() == 0:
-            break  # post-hoc (E20): no statement information at this layer (identical last-token rows), nothing to remove
+        if w.norm() == 0 or u.norm() <= 1e-6 * w.norm():
+            break  # post-hoc (E20): no linear truth signal left at this layer after i removals (early layers), nothing more to remove
         basis.append(F.normalize(u, dim=0))
     if not basis:
         skipped.append(l)
         continue
     Q[l] = torch.stack(basis, 1)
-    err = (Q[l].T @ Q[l] - torch.eye(K, device=dev)).abs().max()
+    if Q[l].shape[1] < K:
+        short[l] = Q[l].shape[1]
+    err = (Q[l].T @ Q[l] - torch.eye(Q[l].shape[1], device=dev)).abs().max()
     assert err < 1e-3, f"basis not orthonormal at l={l}: err {err:.3g}, zero columns {(Q[l].norm(dim=0) == 0).sum().item()}"
 del Hg
 res["inlp_heldout_probe_acc_at_readout"] = probe_acc
 res["inlp_skipped_layers_no_signal"] = skipped
-print(f"[{slug}] INLP basis K={K} at {len(Q)} layers (skipped, no signal: {skipped}); held-out probe acc at l={lt} after i removals: "
+res["inlp_basis_size_if_short"] = short  # layer -> directions found before the signal ran out
+print(f"[{slug}] INLP basis K={K} at {len(Q)} layers (skipped, no signal: {skipped}; shorter bases: {short}); held-out probe acc at l={lt} after i removals: "
       + ", ".join(f"{i}:{x:.2f}" for i, x in probe_acc.items()) + f" | {time.time() - t0:.0f}s", flush=True)
 
 def proj(sub):
@@ -206,7 +209,7 @@ for k in a.kgrid:
     grid[k] = {"acc": acc(d), "tf_mass": m.mean().item(), "nll": nl, "logit_sd": d.std().item()}
 kstar = next((k for k in a.kgrid if grid[k]["acc"] <= 0.65), None)
 kc = kstar or a.control_k or K
-rand_sub = [{l: torch.linalg.qr(torch.randn(Q[l].shape[0], kc, device=dev))[0] for l in Q} for _ in range(a.n_null_sub)]
+rand_sub = [{l: torch.linalg.qr(torch.randn(Q[l].shape[0], min(kc, Q[l].shape[1]), device=dev))[0] for l in Q} for _ in range(a.n_null_sub)]
 rand_stats = []
 for sub in rand_sub:
     with hooked(proj(sub)):
