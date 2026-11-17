@@ -1,6 +1,6 @@
 # Report: Persona × Belief
 
-*All numbers, tables and caveats behind the LessWrong post "We Made Qwen a Medieval Scholar. The Lie Detector Believed It Too." The post carries the story; this file carries the evidence. Every number comes from a JSON file in `results/`, indexed at the end.*
+*All numbers, tables and caveats behind the LessWrong post "I Made Qwen a Medieval Scholar. The Lie Detector Believed It Too." The post carries the story; this file carries the evidence. Every number comes from a JSON file in `results/`, indexed at the end.*
 
 ## Summary
 
