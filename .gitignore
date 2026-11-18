@@ -5,3 +5,10 @@
 __pycache__/
 # lit review downloads are large and regenerable
 lit_review/papers/
+
+# local-only (kept on disk, not in the repo)
+logs/
+post/
+lit_review/
+env.sh
+explorer-ssh.sh

@@ -1,6 +1,6 @@
 # Report: Persona × Belief
 
-*All numbers, tables and caveats behind the LessWrong post "I Made Qwen a Medieval Scholar. The Lie Detector Believed It Too." The post carries the story; this file carries the evidence. Every number comes from a JSON file in `results/`, indexed at the end.*
+*All numbers, tables and caveats from the persona × belief experiments. Every number comes from a JSON file in `results/`, indexed at the end.*
 
 ## Summary
 
@@ -20,7 +20,7 @@ One row per intervention, across Qwen2.5-7B, Llama-3.1-8B, Gemma-2-9B and OLMo-2
 
 The probe faithfully reports what the persona believes, and the model computes its answer somewhere else. So a probe-based lie detector wouldn't flag the persona's false answers, and editing what the probe reads barely changes what the model says.
 
-![](post/figs/fig0_two_routes.png)
+![](figures/fig0_two_routes.png)
 *Figure 0. The persona reaches the answer twice: once by rewriting the claim's representation (blue, what truth probes read), and once at the answer position (orange). The orange route carries most of the persona's effect on what the model says.*
 
 ## Question and setup
@@ -60,7 +60,7 @@ We wrote 155 claims in a 2×2: true today or not, crossed with believed by an ed
 
 A logistic-regression truth probe reads each claim's last token. It is trained on Geometry-of-Truth statements ([Marks & Tegmark, 2023](https://arxiv.org/abs/2310.06824)) with no persona and used only at layers where it gets ≥ 85% on our claims.
 
-![](post/figs/fig1_probe_shift.png)
+![](figures/fig1_probe_shift.png)
 *Figure 1. Truth-probe shift under the 1500-scholar persona (blue) and a 2020-scholar control that differs only in the year (gray), with 95% bootstrap CIs. The persona pushes the two stake cells in opposite directions while shared truths barely move, so the shift is claim-selective.*
 
 The answers follow: accuracy against present-day truth, across all 155 claims, falls from 90–99% to 57–77% in the four families (66% at 14B and 32B).
@@ -73,7 +73,7 @@ Sturgeon et al. found that prompting mostly leaves probes intact, but they teste
 
 Activation patching runs the no-persona prompt, overwrites the residual stream at one layer with the persona run's values, and measures how much of the persona's effect comes back. We patch two regions separately: the statement tokens, where the probe reads, and the answer tail, meaning the question text after the statement plus the answer slot.
 
-![](post/figs/fig2_patching.png)
+![](figures/fig2_patching.png)
 *Figure 2. Share of the persona's effect recovered by patching at each layer, averaged over the two stake cells. Blue: patching the statement tokens fully reproduces the probe shift by the middle layers. Gray, dashed: the same patch recovers at most about half of the answer change, and only in a narrow window. Orange: patching the answer tail recovers all of the answer change from layer ~14–23, depending on the model.*
 
 The probe shift is written into the statement tokens in a band of middle layers, from layer 16 in Qwen and 12 in Llama (26 in Qwen-14B). The 2020-control patch recovers far less. In Gemma, OLMo and Qwen-32B the patch also recovers the full shift, but the pre-registered rule fails there because shared claims move too, so the shift isn't selective enough.
@@ -94,7 +94,7 @@ If the probe direction were the variable the model answers from, three things sh
 
 Maybe the model reads truth from many directions, so removing one does nothing. To test that, we removed up to 64 directions per layer by iterative nullspace projection (INLP; [Ravfogel et al., 2020](https://arxiv.org/abs/2004.07667)).
 
-![](post/figs/fig3_inlp.png)
+![](figures/fig3_inlp.png)
 *Figure 3. INLP at the statement position. As truth directions are removed, the held-out probe's accuracy falls (blue) while the model keeps answering correctly (orange). The persona's effect shrinks (green), in step with the model's overall answer confidence (gray, dashed): removing truth directions turns the volume down on everything.*
 
 The green and gray curves lie almost on top of each other in every model. Our rule asks whether the effect shrinks more than overall confidence does, and more than it does under random subspaces of the same size. It gives "bypass" for Gemma at both positions.
@@ -117,7 +117,7 @@ If the model answers at the answer token, the probe should read the answer token
 
 The probe gets 93–98% held-out accuracy on our claims. It moves with the persona (in Llama, +11.0 on era-believed falsehoods and −19.5 on modern truths), and its claim-by-claim shift tracks the shift in the model's actual answer at **r = 0.82–0.94**. Removing it still does almost nothing.
 
-![](post/figs/fig4_faithful_unused.png)
+![](figures/fig4_faithful_unused.png)
 *Figure 4. Each point is one probe in one model and setup (historical or partisan). x: how well the probe's persona-induced shift tracks the answer's shift, claim by claim. y: how much of the persona's effect on the answer disappears when that probe's direction is projected out. The logistic-regression probes, at the statement (blue) and at the answer position (orange), sit near zero however well they track the answer. Section 8 discusses the mean-difference directions (green).*
 
 | Answer-position truth probe (historical setup) | Qwen | Llama | Gemma | OLMo |
@@ -156,7 +156,7 @@ Everything so far reads the answer as logit(True) − logit(False). To check wri
 | Era-believed falsehoods: no persona → persona | 3% → 41% | 3% → 86% | 6% → 89% | 5% → 86% |
 | Modern truths: no persona → persona | 87% → 45% | 89% → 14% | 89% → 16% | 89% → 37% |
 
-![](post/figs/fig5_free_text.png)
+![](figures/fig5_free_text.png)
 *Figure 5. Share of the persona's change in free-text verdicts recovered by patching the statement tokens (gray) or the answer tail (orange), and removed by ablating the truth direction (blue). Averaged over the two stake cells.*
 
 Ablating the truth direction removes ≤ 13% in every model, and the tail patch recovers far more than the statement patch (60–96% vs 0–25%). The pre-registered rule passes outright only for Llama; Qwen, Gemma and OLMo each miss on one cell, so we score it ~.
@@ -238,7 +238,7 @@ Every result file logs the model, layer, α, vector norm, seed and probe accurac
 | Persona vectors, mediated vs direct term | 7 | `experiments/e03_cross_layer/` | `e03_cross_layer_{model}.json` (Llama under `e03_llama/`) |
 | Steer-then-knockout | 7 | `experiments/e14_knockout/knockout.py` | `e14_knockout_{model}*.json` |
 | Emergent-misalignment organisms | grid | `experiments/e09_em_organisms/` | `e09*`, `e12c_historical_patch_*_{organism}_*.json` |
-| All figures | | `post/make_figs.py` | reads the files above |
+| All figures | | `figures/make_figs.py` | reads the files above |
 
 Run log and history of every experiment: [EXPERIMENTS.md](EXPERIMENTS.md).
 
